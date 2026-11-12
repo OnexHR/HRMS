@@ -1,0 +1,35 @@
+{
+  "name": "hrms-product",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Multi-tenant HRMS Product",
+  "workspaces": [
+    "apps/web",
+    "apps/api",
+    "packages/shared"
+  ],
+  "scripts": {
+    "dev": "concurrently -n WEB,API -c blue,green \"npm run dev -w apps/web\" \"npm run dev -w apps/api\"",
+    "dev:web": "npm run dev -w apps/web",
+    "dev:api": "npm run dev -w apps/api",
+    "build": "npm run build -w apps/web",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+"overrides": {
+  "minimatch": "11.0.1"
+},
+  "dependencies": {
+    "@hookform/resolvers": "^7.0.6",
+    "@tailwindcss/vite": "^4.3.5",
+    "axios": "^1.21.1",
+    "lucide-react": "^1.72.0",
+    "react-hook-form": "^7.92.0",
+    "react-router-dom": "^7.18.5",
+    "tailwindcss": "^4.3.5",
+    "zod": "^4.6.7"
+  }
+}
