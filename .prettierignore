@@ -1,0 +1,11 @@
+node_modules
+dist
+build
+coverage
+*.tsbuildinfo
+package-lock.json
+package-lock.backup.json
+.env
+.env.*
+!.env.example
+!.env.*.example
