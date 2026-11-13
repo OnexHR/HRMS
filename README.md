@@ -1,135 +1,92 @@
 # HRMS
 
-Multi-tenant HRMS product monorepo. This repository currently contains the
-project structure, workspace configuration, and build tooling. Business
-features will be implemented in later steps.
+Runnable HRMS monorepo with a React/Vite frontend, an Express/Mongoose API,
+and shared TypeScript schemas.
 
-## Architecture
+## Requirements
 
-```text
-HRMS/
-├── frontend/       React + TypeScript + Vite + Tailwind CSS v4
-├── backend/        Node.js + Express + MongoDB (Mongoose)
-├── packages/
-│   └── shared/     TypeScript types, constants, and schemas
-├── docs/
-├── .gitignore
-├── .prettierrc
-├── .prettierignore
-├── package.json
-├── package-lock.json
-└── README.md
+- Node.js 20.19+ and npm 10+
+- A reachable MongoDB instance (local MongoDB or MongoDB Atlas)
+
+## Configure
+
+From the repository root, install the workspaces and copy the environment
+template if you do not already have the backend config:
+
+```cmd
+npm install
+if not exist backend\.env copy backend\.env.example backend\.env
+if not exist frontend\.env echo VITE_API_BASE_URL=http://localhost:4000>frontend\.env
 ```
 
-The monorepo is managed with **npm workspaces**. There is a single root
-`package-lock.json`; `package-lock.backup.json` is kept as a backup and is not
-used by npm.
+Edit `backend\.env` and set:
 
-## Technology stack
+- `MONGODB_URI` to the actual MongoDB connection string (or use `MONGO_URI`)
+- `JWT_SECRET` to a private random secret of at least 32 characters
+- `EMPLOYEE_ADMIN_EMAIL` and `EMPLOYEE_ADMIN_PASSWORD` for the initial System
+  Admin; the password must have at least 8 characters, uppercase, lowercase,
+  a number, and a special character
 
-**Frontend:** React, TypeScript, Vite, Tailwind CSS v4, React Router, Axios,
-Lucide React, React Hook Form, Zod.
+The backend requires MongoDB and a JWT secret; it exits rather than starting
+without them or when the database connection fails. `frontend\.env` defaults
+the API origin to `http://localhost:4000`.
 
-**Backend:** Node.js, Express, JavaScript ES Modules, MongoDB, Mongoose.
+## Seed the System Admin
 
-**Shared:** TypeScript types, constants, and validation schemas.
+After setting the backend environment values and starting MongoDB, run this
+from the repository root:
 
-## Prerequisites
+```cmd
+npm run seed
+```
 
-- Node.js 20.19+ (tested with Node.js 24)
-- npm 10+
-- MongoDB (only required once backend features connect to a database)
+The seed creates or updates the configured System Admin and stores passwords
+as bcrypt hashes. It does not create staff accounts by default. There is no
+public registration or admin-provisioning API; only the seeded System Admin
+can create employee and manager accounts through the admin console.
 
-## Installation
+Optional demo staff can be seeded only when explicitly enabled in
+`backend\.env` with `SEED_DEMO=true` and a policy-compliant
+`EMPLOYEE_DEMO_PASSWORD`. Demo manager and employee emails can be set with
+`EMPLOYEE_DEMO_MANAGER_EMAIL` and `EMPLOYEE_DEMO_EMPLOYEE_EMAIL`.
+
+## Start the application
 
 From the repository root:
 
 ```cmd
-npm install
-```
-
-This installs all workspace dependencies and builds `@hrms/shared` into
-`packages/shared/dist` via the root `postinstall` script.
-
-## Environment configuration
-
-```cmd
-copy backend\.env.example backend\.env
-```
-
-Set `MONGODB_URI`, `CORS_ORIGIN`, and other values in `backend/.env`.
-Never commit `.env` files; only `.env.example` files are tracked.
-
-The frontend reads `VITE_API_URL` when it is added to
-`frontend/.env` (for example `http://localhost:4000/api/v1`).
-
-## Running the website and API
-
-### Website and API together from the root
-
-```cmd
 npm run dev
 ```
 
-The shared package is built first, then the frontend and backend start
-together with `concurrently`.
+This builds `@hrms/shared`, starts the migrated API at
+`http://localhost:4000`, and starts the frontend at `http://localhost:5173`.
+Open the frontend URL to sign in.
 
-### Frontend only
-
-```cmd
-npm run dev:frontend
-```
-
-or independently:
-
-```cmd
-cd frontend
-npm run dev
-```
-
-### Backend only
+To run either workspace separately:
 
 ```cmd
 npm run dev:backend
+npm run dev:frontend
 ```
 
-or independently:
+## API contract
+
+The migrated frontend talks to the baseline backend started by
+`backend\server.js`. Its employee API is rooted at `/api/employee` and returns
+the legacy top-level response shapes (not the `{ success, data }` envelope).
+The frontend constructs this contract using
+`VITE_API_BASE_URL` + `/api/employee`; file upload helpers use `/api/upload`.
+
+The separate, in-progress implementation in `backend\src` uses `/api/v1` and a
+different response envelope. It is not served by `npm run dev` and is not the
+contract used by the migrated frontend. Do not mix the two implementations.
+
+## Verify
 
 ```cmd
-cd backend
-npm run dev
+npm run test
+npm run typecheck
+npm run build
 ```
 
-The backend starts even when `MONGODB_URI` is not set; it logs a warning instead
-of connecting. Set `MONGODB_URI` to enable the database connection.
-
-## Build, lint, and test
-
-```cmd
-npm run build       # build shared package + frontend
-npm run lint        # ESLint across the workspaces
-npm run test        # run workspace tests when they exist
-npm run typecheck   # type-check workspaces that expose typecheck
-npm run format      # Prettier
-npm run format:check
-```
-
-## Workspace layout conventions
-
-- Website and API code live in `frontend` and `backend` at the repository root.
-- Shared definitions live in `packages/shared` and are imported as
-  `@hrms/shared`.
-- Frontend and backend never import each other's implementation files.
-- Empty folders are preserved with `.gitkeep` until they receive code.
-
-## Dependency security
-
-The root `package.json` pins `minimatch` to `11.0.8` through npm `overrides`.
-Run the audit at any time:
-
-```cmd
-npm ls minimatch
-npm audit
-```
-
-See `docs/architecture.md` for more detail on workspace boundaries.
+`npm run test` runs the backend API tests and shared-package tests.

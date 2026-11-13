@@ -15,6 +15,7 @@
     "@hrms/shared": "*",
     "axios": "^1.21.1",
     "lucide-react": "^1.72.0",
+    "moment-timezone": "^0.6.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-hook-form": "^7.92.0",
