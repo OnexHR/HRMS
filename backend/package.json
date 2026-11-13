@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "lint": "eslint src --config ../../eslint.config.mjs"
+    "lint": "eslint src --config ../eslint.config.mjs",
+    "test": "node --test"
   },
   "dependencies": {
     "@hrms/shared": "*",

@@ -8,9 +8,8 @@ features will be implemented in later steps.
 
 ```text
 HRMS/
-├── apps/
-│   ├── frontend/   React + TypeScript + Vite + Tailwind CSS v4
-│   └── backend/    Node.js + Express + MongoDB (Mongoose)
+├── frontend/       React + TypeScript + Vite + Tailwind CSS v4
+├── backend/        Node.js + Express + MongoDB (Mongoose)
 ├── packages/
 │   └── shared/     TypeScript types, constants, and schemas
 ├── docs/
@@ -55,18 +54,18 @@ This installs all workspace dependencies and builds `@hrms/shared` into
 ## Environment configuration
 
 ```cmd
-copy apps\backend\.env.example apps\backend\.env
+copy backend\.env.example backend\.env
 ```
 
-Set `MONGODB_URI`, `CORS_ORIGIN`, and other values in `apps/backend/.env`.
+Set `MONGODB_URI`, `CORS_ORIGIN`, and other values in `backend/.env`.
 Never commit `.env` files; only `.env.example` files are tracked.
 
 The frontend reads `VITE_API_URL` when it is added to
-`apps/frontend/.env` (for example `http://localhost:4000/api/v1`).
+`frontend/.env` (for example `http://localhost:4000/api/v1`).
 
-## Running the applications
+## Running the website and API
 
-### Both applications from the root
+### Website and API together from the root
 
 ```cmd
 npm run dev
@@ -84,7 +83,7 @@ npm run dev:frontend
 or independently:
 
 ```cmd
-cd apps\frontend
+cd frontend
 npm run dev
 ```
 
@@ -97,7 +96,7 @@ npm run dev:backend
 or independently:
 
 ```cmd
-cd apps\backend
+cd backend
 npm run dev
 ```
 
@@ -117,7 +116,7 @@ npm run format:check
 
 ## Workspace layout conventions
 
-- Application code lives only in `apps/frontend` and `apps/backend`.
+- Website and API code live in `frontend` and `backend` at the repository root.
 - Shared definitions live in `packages/shared` and are imported as
   `@hrms/shared`.
 - Frontend and backend never import each other's implementation files.

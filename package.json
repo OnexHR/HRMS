@@ -4,8 +4,8 @@
   "private": true,
   "description": "Multi-tenant HRMS monorepo (frontend, backend, shared)",
   "workspaces": [
-    "apps/frontend",
-    "apps/backend",
+    "frontend",
+    "backend",
     "packages/shared"
   ],
   "scripts": {

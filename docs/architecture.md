@@ -4,8 +4,8 @@
 
 | Workspace        | Path              | Responsibility                               |
 | ---------------- | ----------------- | -------------------------------------------- |
-| `@hrms/frontend` | `apps/frontend`   | Browser application (React/Vite)             |
-| `@hrms/backend`  | `apps/backend`    | HTTP API (Express/Mongoose)                  |
+| `@hrms/frontend` | `frontend`        | HRMS website (React/Vite)                    |
+| `@hrms/backend`  | `backend`         | HTTP API (Express/Mongoose)                  |
 | `@hrms/shared`   | `packages/shared` | Framework-agnostic types, constants, schemas |
 
 Dependency direction:
@@ -16,9 +16,9 @@ frontend ──┐
 backend  ──┘
 ```
 
-- `frontend` never imports from `apps/backend`.
-- `backend` never imports from `apps/frontend`.
-- `shared` does not depend on either application.
+- `frontend` never imports from `backend`.
+- `backend` never imports from `frontend`.
+- `shared` does not depend on either workspace.
 - No circular workspace dependencies.
 
 ## Frontend layout
@@ -62,13 +62,13 @@ API routes will be versioned under `/api/v1`.
 
 The package is compiled to `dist/` by TypeScript and consumed through the
 `@hrms/shared` package name. The root `postinstall` script builds it so the
-applications can import it immediately after `npm install`.
+workspaces can import it immediately after `npm install`.
 
 ## Conventions
 
 - Frontend: TypeScript, functional React components, Tailwind utility classes.
 - Backend: JavaScript ES Modules, controllers → services → models.
 - Keep authorization and validation rules centralized; do not duplicate them
-  across applications.
+  across workspaces.
 - Prefer adding a module to `packages/shared` when both applications need the
   same definition.

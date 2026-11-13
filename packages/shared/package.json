@@ -20,7 +20,8 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "eslint src --config ../../eslint.config.mjs"
+    "lint": "eslint src --config ../../eslint.config.mjs",
+    "test": "node --test"
   },
   "dependencies": {
     "zod": "^4.6.7"
