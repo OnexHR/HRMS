@@ -2,50 +2,53 @@
  * API transport types.
  *
  * Decision 4 (locked): every endpoint responds with `{ success, data, error }`.
+ * Error codes come from the canonical union in `constants/errors.ts` (M8).
  */
 
-export type EntityId = string;
-export type ISODateString = string;
-export type Nullable<T> = T | null;
+import type { ApiErrorCode } from '../constants/errors.js'
+
+export type EntityId = string
+export type ISODateString = string
+export type Nullable<T> = T | null
 
 export interface ApiErrorBody {
-  /** Stable machine-readable code, e.g. `VALIDATION_ERROR`. */
-  code: string;
+  /** Stable machine-readable code from `API_ERROR_CODES`. */
+  code: ApiErrorCode
   /** Human-readable message safe to show to the user. */
-  message: string;
+  message: string
   /** Field name when the error is attributable to one input. */
-  field?: string;
+  field?: string
   /** Extra context (validation issues, conflicting id, ...). */
-  details?: Record<string, unknown>;
+  details?: Record<string, unknown>
 }
 
 export interface ApiSuccess<T> {
-  success: true;
-  data: T;
+  success: true
+  data: T
 }
 
 export interface ApiFailure {
-  success: false;
-  error: ApiErrorBody;
+  success: false
+  error: ApiErrorBody
 }
 
-export type ApiResponse<T> = ApiSuccess<T> | ApiFailure;
+export type ApiResponse<T> = ApiSuccess<T> | ApiFailure
 
 export interface PageMeta {
-  page: number;
-  pageSize: number;
-  total: number;
-  totalPages: number;
+  page: number
+  pageSize: number
+  total: number
+  totalPages: number
 }
 
 export interface Paginated<T> {
-  items: T[];
-  meta: PageMeta;
+  items: T[]
+  meta: PageMeta
 }
 
-export type PaginatedApiResponse<T> = ApiResponse<Paginated<T>>;
+export type PaginatedApiResponse<T> = ApiResponse<Paginated<T>>
 
 /** Convenience guard for consumers handling a possibly-failed response. */
 export function isApiSuccess<T>(response: ApiResponse<T>): response is ApiSuccess<T> {
-  return response.success;
+  return response.success
 }

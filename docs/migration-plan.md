@@ -5,10 +5,10 @@
 **Target:** `C:\Users\Ankit Das\Desktop\HRMS`
 **Path legend:** every target path is relative to `C:\Users\Ankit Das\Desktop\HRMS\`.
 
-| Stage | Goal | Output |
-| --- | --- | --- |
-| **Stage 1 — Foundation migration** | Move the complete existing HRMS into this repository, adapt it to the target stack, fix essential bugs and security holes, and make it run end to end. | A working HRMS, complete against the donor feature set, ready for the initial Git commit. |
-| **Stage 2 — Enterprise transformation** | Evolve the Stage 1 foundation into a multi-tenant, five-role enterprise HRMS. | The approved enterprise architecture, delivered incrementally by the four-person team. |
+| Stage                                   | Goal                                                                                                                                                   | Output                                                                                    |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| **Stage 1 — Foundation migration**      | Move the complete existing HRMS into this repository, adapt it to the target stack, fix essential bugs and security holes, and make it run end to end. | A working HRMS, complete against the donor feature set, ready for the initial Git commit. |
+| **Stage 2 — Enterprise transformation** | Evolve the Stage 1 foundation into a multi-tenant, five-role enterprise HRMS.                                                                          | The approved enterprise architecture, delivered incrementally by the four-person team.    |
 
 This document is the execution contract for **Stage 1** and the roadmap for **Stage 2**. Stage 2 decisions are recorded so Stage 1 does not close doors.
 
@@ -31,33 +31,33 @@ The donor was designed as a **two-role (`employee`, `manager`), single-tenant, s
 
 ### 0.2 Stage 1 boundary (explicit non-goals)
 
-| Not in Stage 1 | Why | Where it lands |
-| --- | --- | --- |
-| Organization CRUD/UI, invitations, memberships | Enterprise feature | Stage 2, Wave 1 |
-| Five-role RBAC (`system_admin`, `org_admin`, `hr_manager`, `manager`, `employee`) | Enterprise feature | Stage 2, Wave 2 |
-| Tenant onboarding / tenant switching | Enterprise feature | Stage 2, Wave 1–3 |
-| Configurable attendance policy UI | Donor has fixed Asia/Kolkata rules | Stage 2, Wave 4 |
-| Append-only leave ledger | Donor uses counters | Stage 2, Wave 5 |
-| Multi-level approval workflows | Donor is single-manager approval | Stage 2, Wave 5 |
-| `StorageProvider` abstraction, object storage | Donor uses R2 presigned URLs | Stage 1 uses GridFS directly; Stage 2 wraps it |
-| Org-scoped analytics, audit console, rate limiting | Enterprise hardening | Stage 2, Wave 7–8 |
-| Website admin (`Users`, `Courses`, `Careers`, `Sessions`, `Reviews`, `Hero Tutors`, `Students`, `Trainers`) | Not HRMS | **Dropped permanently** |
-| Anonymous R2 upload endpoints | Security hole | **Replaced** by authenticated GridFS endpoints |
+| Not in Stage 1                                                                                              | Why                                | Where it lands                                 |
+| ----------------------------------------------------------------------------------------------------------- | ---------------------------------- | ---------------------------------------------- |
+| Organization CRUD/UI, invitations, memberships                                                              | Enterprise feature                 | Stage 2, Wave 1                                |
+| Five-role RBAC (`system_admin`, `org_admin`, `hr_manager`, `manager`, `employee`)                           | Enterprise feature                 | Stage 2, Wave 2                                |
+| Tenant onboarding / tenant switching                                                                        | Enterprise feature                 | Stage 2, Wave 1–3                              |
+| Configurable attendance policy UI                                                                           | Donor has fixed Asia/Kolkata rules | Stage 2, Wave 4                                |
+| Append-only leave ledger                                                                                    | Donor uses counters                | Stage 2, Wave 5                                |
+| Multi-level approval workflows                                                                              | Donor is single-manager approval   | Stage 2, Wave 5                                |
+| `StorageProvider` abstraction, object storage                                                               | Donor uses R2 presigned URLs       | Stage 1 uses GridFS directly; Stage 2 wraps it |
+| Org-scoped analytics, audit console, rate limiting                                                          | Enterprise hardening               | Stage 2, Wave 7–8                              |
+| Website admin (`Users`, `Courses`, `Careers`, `Sessions`, `Reviews`, `Hero Tutors`, `Students`, `Trainers`) | Not HRMS                           | **Dropped permanently**                        |
+| Anonymous R2 upload endpoints                                                                               | Security hole                      | **Replaced** by authenticated GridFS endpoints |
 
 ### 0.3 Decisions requiring approval
 
-| ID | Decision | Recommendation | Alternative |
-| --- | --- | --- | --- |
-| **D1** | Tenant seam in Stage 1 | Add `organizationId` to every domain model, a singleton `Organization` document, and `req.auth.organizationId` from day one. No org UI, no membership, no switching. | Pure donor schema; Stage 2 backfills. Cheaper now, but every query must be swept later. |
-| **D2** | Stage 1 roles | `admin \| manager \| employee`, additive (admin ⊇ manager ⊇ employee), one permission matrix. | Donor's two roles + separate admin model (rejected: dual realm). |
-| **D3** | Admin identity | Fold `EmployeeAdmin` into `Employee.role = "admin"`. One login, one token, one `/auth/me`. | Keep a second model/realm (rejected: duplicate auth and UI). |
-| **D4** | Files | GridFS through `multer` memory upload; authenticated `/api/v1/files` endpoints; no signed URLs. | Local disk (rejected: multi-instance unsafe) / R2 (rejected: anonymous URLs). |
-| **D5** | Leave | Donor counters (`leaveBalances`) with fixed side effects; fix cancel/approval races. | Ledger now (deferred to Stage 2). |
-| **D6** | Attendance policy | Donor constants (Asia/Kolkata, 09:30, 18:00 OT), overridable by env only. | Org-configurable policy (Stage 2). |
-| **D7** | API contract | `/api/v1`, `{ success, data, error }` envelope, paginated `{ items, meta }`. | Donor bare payloads (rejected: inconsistent with target app). |
-| **D8** | Validation | Shared Zod schemas for request shape; donor JS validators retained for domain rules. | Zod only (loses donor-specific rules) / JS only (duplicate). |
-| **D9** | Shared package | Keep and correct 19 modules; defer 6; drop 4. See §5. | Keep all 28 (rejected: unused enterprise surface). |
-| **D10** | Stage 1 tests | Port 55 donor tests; add auth/IDOR/file/leave/query tests; API tests against a test Mongo via `fetch`. | Playwright E2E (optional, not required for commit). |
+| ID      | Decision               | Recommendation                                                                                                                                                       | Alternative                                                                             |
+| ------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| **D1**  | Tenant seam in Stage 1 | Add `organizationId` to every domain model, a singleton `Organization` document, and `req.auth.organizationId` from day one. No org UI, no membership, no switching. | Pure donor schema; Stage 2 backfills. Cheaper now, but every query must be swept later. |
+| **D2**  | Stage 1 roles          | `admin \| manager \| employee`, additive (admin ⊇ manager ⊇ employee), one permission matrix.                                                                        | Donor's two roles + separate admin model (rejected: dual realm).                        |
+| **D3**  | Admin identity         | Fold `EmployeeAdmin` into `Employee.role = "admin"`. One login, one token, one `/auth/me`.                                                                           | Keep a second model/realm (rejected: duplicate auth and UI).                            |
+| **D4**  | Files                  | GridFS through `multer` memory upload; authenticated `/api/v1/files` endpoints; no signed URLs.                                                                      | Local disk (rejected: multi-instance unsafe) / R2 (rejected: anonymous URLs).           |
+| **D5**  | Leave                  | Donor counters (`leaveBalances`) with fixed side effects; fix cancel/approval races.                                                                                 | Ledger now (deferred to Stage 2).                                                       |
+| **D6**  | Attendance policy      | Donor constants (Asia/Kolkata, 09:30, 18:00 OT), overridable by env only.                                                                                            | Org-configurable policy (Stage 2).                                                      |
+| **D7**  | API contract           | `/api/v1`, `{ success, data, error }` envelope, paginated `{ items, meta }`.                                                                                         | Donor bare payloads (rejected: inconsistent with target app).                           |
+| **D8**  | Validation             | Shared Zod schemas for request shape; donor JS validators retained for domain rules.                                                                                 | Zod only (loses donor-specific rules) / JS only (duplicate).                            |
+| **D9**  | Shared package         | Keep and correct 19 modules; defer 6; drop 4. See §5.                                                                                                                | Keep all 28 (rejected: unused enterprise surface).                                      |
+| **D10** | Stage 1 tests          | Port 55 donor tests; add auth/IDOR/file/leave/query tests; API tests against a test Mongo via `fetch`.                                                               | Playwright E2E (optional, not required for commit).                                     |
 
 **D1 is the only decision that adds Stage 1 scope.** It costs roughly two days and removes a security-critical Stage 2 sweep. If rejected, every model and query is migrated donor-pure and Stage 2 performs the backfill.
 
@@ -65,21 +65,21 @@ The donor was designed as a **two-role (`employee`, `manager`), single-tenant, s
 
 The Phase 1 shared package is uncommitted. Stage 1 Phase A1 corrects it before any consumer depends on it.
 
-| Finding | Disposition in Stage 1 |
-| --- | --- |
-| **C1** `updateEmployeeSchema` default leakage | **Fix (blocking).** Derive create/update from a defaults-free field object. Regression test. |
-| **H1** no role-assignment ceiling | **Fix (blocking).** `canAssignRole(actor, target)` for 3 roles; self-role change forbidden; managers may only create `employee`. |
-| **H2** unscoped `employee:read` | **Fix (blocking).** Split into `employee:read:self`, `employee:read:team`, `employee:read:all`. `resolveReadScope(role)`. |
+| Finding                                          | Disposition in Stage 1                                                                                                                                |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **C1** `updateEmployeeSchema` default leakage    | **Fix (blocking).** Derive create/update from a defaults-free field object. Regression test.                                                          |
+| **H1** no role-assignment ceiling                | **Fix (blocking).** `canAssignRole(actor, target)` for 3 roles; self-role change forbidden; managers may only create `employee`.                      |
+| **H2** unscoped `employee:read`                  | **Fix (blocking).** Split into `employee:read:self`, `employee:read:team`, `employee:read:all`. `resolveReadScope(role)`.                             |
 | **H3** policy defaults missing `workingWeekdays` | **Resolved by scope change.** Drop `ATTENDANCE_POLICY_DEFAULTS`; keep individual constants + `WORKING_WEEKDAYS`. Stage 2 reintroduces a typed policy. |
-| **H4** `FileMetadata.key` exposed | **Fix (blocking).** `FileMetadata` becomes server-only; all DTOs use `FileResource`. |
-| **H5** no tests | **Fix (blocking).** Shared `node --test` suite against `dist`. |
-| **M1** half-day on weekend = 0.5 | **Fix.** Return `0` for non-working days. |
-| **M5** MIME allowlist not enforced | **Fix.** Schema normalizes; file service enforces allowlist + size. |
-| **M7** `on_break`/`on_call` as persisted status | **Preserve donor behaviour** (donor stores them). Split in Stage 2. |
-| **M8** free-form error code | **Fix.** `API_ERROR_CODES` + `ApiErrorCode`. |
-| **M14** org settings schema / auth principal | **Defer** org settings. Add minimal `AuthPrincipal`. |
-| **M17** unknown keys stripped silently | **Fix.** `.strict()` on auth/employee/role-bearing schemas; strip elsewhere. |
-| Remaining Medium/Low | Fix opportunistically in A1; otherwise defer with the consumer. |
+| **H4** `FileMetadata.key` exposed                | **Fix (blocking).** `FileMetadata` becomes server-only; all DTOs use `FileResource`.                                                                  |
+| **H5** no tests                                  | **Fix (blocking).** Shared `node --test` suite against `dist`.                                                                                        |
+| **M1** half-day on weekend = 0.5                 | **Fix.** Return `0` for non-working days.                                                                                                             |
+| **M5** MIME allowlist not enforced               | **Fix.** Schema normalizes; file service enforces allowlist + size.                                                                                   |
+| **M7** `on_break`/`on_call` as persisted status  | **Preserve donor behaviour** (donor stores them). Split in Stage 2.                                                                                   |
+| **M8** free-form error code                      | **Fix.** `API_ERROR_CODES` + `ApiErrorCode`.                                                                                                          |
+| **M14** org settings schema / auth principal     | **Defer** org settings. Add minimal `AuthPrincipal`.                                                                                                  |
+| **M17** unknown keys stripped silently           | **Fix.** `.strict()` on auth/employee/role-bearing schemas; strip elsewhere.                                                                          |
+| Remaining Medium/Low                             | Fix opportunistically in A1; otherwise defer with the consumer.                                                                                       |
 
 ---
 
@@ -87,30 +87,30 @@ The Phase 1 shared package is uncommitted. Stage 1 Phase A1 corrects it before a
 
 These are the approved enterprise decisions. Stage 1 must not contradict them.
 
-| Area | Stage 2 target |
-| --- | --- |
-| Tenancy | `Organization` is the tenant root. Every domain record carries `organizationId`. Strict query scoping; no cross-tenant reads, ever. |
-| Identity | One identity (`Employee`/membership) across the platform. System administrators are platform-level, not org members. |
-| Roles | `system_admin`, `org_admin`, `hr_manager`, `manager`, `employee`. Additive permission matrix; assignment ceiling; no self-escalation. |
+| Area       | Stage 2 target                                                                                                                                            |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tenancy    | `Organization` is the tenant root. Every domain record carries `organizationId`. Strict query scoping; no cross-tenant reads, ever.                       |
+| Identity   | One identity (`Employee`/membership) across the platform. System administrators are platform-level, not org members.                                      |
+| Roles      | `system_admin`, `org_admin`, `hr_manager`, `manager`, `employee`. Additive permission matrix; assignment ceiling; no self-escalation.                     |
 | Attendance | Organization-configurable policy (timezone, shift, grace, half-day, overtime, breaks, working weekdays) with department overrides and a holiday calendar. |
-| Leave | Append-only ledger (`allocation`, `accrual`, `carry_forward`, `usage`, `reversal`, `adjustment`, `expiry`), derived balances, idempotent entries. |
-| Approvals | Configurable, multi-level (manager → HR), delegation, audit trail. |
-| Storage | `StorageProvider` interface; GridFS adapter first; optional object storage later. No signed URL in shared DTOs. |
-| Reporting | Org-scoped dashboards, team reports, export, scheduled summaries. |
-| Security | Audit log, rate limiting, session/refresh tokens, password policy, tenant isolation tests, observability. |
+| Leave      | Append-only ledger (`allocation`, `accrual`, `carry_forward`, `usage`, `reversal`, `adjustment`, `expiry`), derived balances, idempotent entries.         |
+| Approvals  | Configurable, multi-level (manager → HR), delegation, audit trail.                                                                                        |
+| Storage    | `StorageProvider` interface; GridFS adapter first; optional object storage later. No signed URL in shared DTOs.                                           |
+| Reporting  | Org-scoped dashboards, team reports, export, scheduled summaries.                                                                                         |
+| Security   | Audit log, rate limiting, session/refresh tokens, password policy, tenant isolation tests, observability.                                                 |
 
 ### 1.1 Stage 1 seams that protect Stage 2
 
-| Seam | Stage 1 implementation | Stage 2 change |
-| --- | --- | --- |
-| Tenant field | `organizationId` on models; singleton `Organization`; `req.auth.organizationId`; all service filters include it. | Add org CRUD, memberships, invitations. No data backfill. |
-| RBAC | `permissions.js` with one matrix; every route uses `authorize(permission)`. | Replace matrix and expand roles; route code unchanged. |
-| Identity | Single `Employee` collection, `role` enum `admin\|manager\|employee`. | Expand enum; add `Membership`; map `admin → org_admin`. |
-| Domain modules | `modules/<domain>/{routes,controllers,services,models}`. | Add modules; existing boundaries hold. |
-| Attendance policy | Constants in `@hrms/shared` + env overrides; one `resolvePolicy()` helper. | `resolvePolicy(orgId)` reads settings; callers unchanged. |
-| Leave | Counters behind `leaveService`. | Swap service internals to ledger; API shape stays. |
-| Storage | `filesService` with private `key`; public `FileResource`. | Introduce `StorageProvider`; GridFS adapter wraps `filesService`. |
-| Error envelope | `ok()` / `fail()` + `ApiError`. | Add codes; clients unchanged. |
+| Seam              | Stage 1 implementation                                                                                           | Stage 2 change                                                    |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Tenant field      | `organizationId` on models; singleton `Organization`; `req.auth.organizationId`; all service filters include it. | Add org CRUD, memberships, invitations. No data backfill.         |
+| RBAC              | `permissions.js` with one matrix; every route uses `authorize(permission)`.                                      | Replace matrix and expand roles; route code unchanged.            |
+| Identity          | Single `Employee` collection, `role` enum `admin\|manager\|employee`.                                            | Expand enum; add `Membership`; map `admin → org_admin`.           |
+| Domain modules    | `modules/<domain>/{routes,controllers,services,models}`.                                                         | Add modules; existing boundaries hold.                            |
+| Attendance policy | Constants in `@hrms/shared` + env overrides; one `resolvePolicy()` helper.                                       | `resolvePolicy(orgId)` reads settings; callers unchanged.         |
+| Leave             | Counters behind `leaveService`.                                                                                  | Swap service internals to ledger; API shape stays.                |
+| Storage           | `filesService` with private `key`; public `FileResource`.                                                        | Introduce `StorageProvider`; GridFS adapter wraps `filesService`. |
+| Error envelope    | `ok()` / `fail()` + `ApiError`.                                                                                  | Add codes; clients unchanged.                                     |
 
 ---
 
@@ -120,31 +120,31 @@ These are the approved enterprise decisions. Stage 1 must not contradict them.
 
 All donor paths below are under `backend/`.
 
-| Subsystem | Donor files | Lines | Stage 1 action |
-| --- | --- | --- | --- |
-| Config | `config/env.js` | 11 | Extend (`JWT_SECRET`, seed, upload, timezone) |
-| Errors | `errors/ApiError.js` | 9 | Move + extend |
-| Auth middleware | `middleware/employeeAuth.js` | 126 | **Rewrite** as one realm, 3 roles |
-| Auth controller/service | `controllers/employee/authController.js`, `services/employee/auth.service.js` | 146 | Adapt; drop `Admin` |
-| Employee/Admin controller | `controllers/employee/adminController.js` | 371 | Split into employees / team / tasks |
-| Profile controller | `controllers/employee/profileController.js` | 88 | Adapt |
-| Attendance | controller 137, service 968, constants 38, validator 92, model 58 | 1,293 | Port + fix |
-| Leave | controller 93, service 146, validator 63, model 49 | 351 | Port + fix |
-| Tasks | controller 197, service 116, model 37 | 350 | Port |
-| Queries | controller 79, service 48, model 37 | 164 | Port + fix team filter |
-| Meetings | controller 309, model 31 | 340 | Port; remove URL generator |
-| Activity | service 27, model 40 | 67 | Port |
-| Dashboards | controller 67, service 304 | 371 | Port |
-| Employee model | `models/employee/Employee.js` | 87 | Adapt (role + tenant + avatar/file ids) |
-| Counter | `models/employee/Counter.js` | 16 | Move to shared models |
-| Admin model | `models/employee/Admin.js` | 33 | **Drop** (fold into Employee) |
-| Storage helper | `services/employee/s3.service.js` | 27 | **Drop** (replaced by GridFS) |
-| Validators | `util.validator.js` | 53 | Rewrite as error/validation helpers |
-| Routes | `routes/employeeRoutes.js` | 165 | Re-home under `/api/v1` |
-| Seed | `seed/seedEmployees.mjs` | 94 | **Rewrite** (no hardcoded creds) |
-| Tests | `test/employee/employee.test.js` | 707 | Port + extend (55 tests) |
-| Uploads | `controllers/uploadController.js`, `routes/uploadRoutes.js` | 68 | **Drop**; replace with authenticated files module |
-| Website admin/users/courses/etc. | `models/User.js`, `routes/adminRoutes.js`, `routes/userRoutes.js`, `controllers/userController.js`, … | ~15k | **Drop permanently** |
+| Subsystem                        | Donor files                                                                                           | Lines | Stage 1 action                                    |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------- | ----- | ------------------------------------------------- |
+| Config                           | `config/env.js`                                                                                       | 11    | Extend (`JWT_SECRET`, seed, upload, timezone)     |
+| Errors                           | `errors/ApiError.js`                                                                                  | 9     | Move + extend                                     |
+| Auth middleware                  | `middleware/employeeAuth.js`                                                                          | 126   | **Rewrite** as one realm, 3 roles                 |
+| Auth controller/service          | `controllers/employee/authController.js`, `services/employee/auth.service.js`                         | 146   | Adapt; drop `Admin`                               |
+| Employee/Admin controller        | `controllers/employee/adminController.js`                                                             | 371   | Split into employees / team / tasks               |
+| Profile controller               | `controllers/employee/profileController.js`                                                           | 88    | Adapt                                             |
+| Attendance                       | controller 137, service 968, constants 38, validator 92, model 58                                     | 1,293 | Port + fix                                        |
+| Leave                            | controller 93, service 146, validator 63, model 49                                                    | 351   | Port + fix                                        |
+| Tasks                            | controller 197, service 116, model 37                                                                 | 350   | Port                                              |
+| Queries                          | controller 79, service 48, model 37                                                                   | 164   | Port + fix team filter                            |
+| Meetings                         | controller 309, model 31                                                                              | 340   | Port; remove URL generator                        |
+| Activity                         | service 27, model 40                                                                                  | 67    | Port                                              |
+| Dashboards                       | controller 67, service 304                                                                            | 371   | Port                                              |
+| Employee model                   | `models/employee/Employee.js`                                                                         | 87    | Adapt (role + tenant + avatar/file ids)           |
+| Counter                          | `models/employee/Counter.js`                                                                          | 16    | Move to shared models                             |
+| Admin model                      | `models/employee/Admin.js`                                                                            | 33    | **Drop** (fold into Employee)                     |
+| Storage helper                   | `services/employee/s3.service.js`                                                                     | 27    | **Drop** (replaced by GridFS)                     |
+| Validators                       | `util.validator.js`                                                                                   | 53    | Rewrite as error/validation helpers               |
+| Routes                           | `routes/employeeRoutes.js`                                                                            | 165   | Re-home under `/api/v1`                           |
+| Seed                             | `seed/seedEmployees.mjs`                                                                              | 94    | **Rewrite** (no hardcoded creds)                  |
+| Tests                            | `test/employee/employee.test.js`                                                                      | 707   | Port + extend (55 tests)                          |
+| Uploads                          | `controllers/uploadController.js`, `routes/uploadRoutes.js`                                           | 68    | **Drop**; replace with authenticated files module |
+| Website admin/users/courses/etc. | `models/User.js`, `routes/adminRoutes.js`, `routes/userRoutes.js`, `controllers/userController.js`, … | ~15k  | **Drop permanently**                              |
 
 **Backend total to migrate:** ~4,900 lines (including tests), plus a new files module and seed.
 
@@ -152,48 +152,48 @@ All donor paths below are under `backend/`.
 
 All donor paths below are under `frontend/src/`.
 
-| Group | Files | Lines | Stage 1 action |
-| --- | --- | --- | --- |
-| API client | `lib/employeeApi.ts` | 80 | Rewrite as `lib/api.ts` (single token, envelope unwrap) |
-| Auth context | `contexts/EmployeeAuthContext.tsx` | 125 | Rewrite as `features/auth/AuthContext.tsx` |
-| Route guard | `components/EmployeePrivateRoute.tsx` | 36 | Rewrite as `app/routes/ProtectedRoute.tsx` |
-| Domain types | `types/Employee.ts` | 321 | Split: shared DTOs + local view models |
-| Password hook | `hooks/useChangePassword.tsx` | 39 | Adapt (single realm) |
-| Active meeting | `hooks/useActiveMeeting.tsx` | 230 | Port |
-| Meeting dialog | `components/MeetingDialog.tsx` | 543 | Port; no generated link |
-| Shared utils | `utils/getInitials.ts`, `utils/getImageUrl.ts` | ~70 | Port / replace file URL resolver |
-| Attendance rules | `pages/EmployeeDashboard/components/attendanceRules.ts` | 328 | **Move to shared**; frontend re-export |
-| Attendance live | `pages/EmployeeDashboard/components/attendanceLive.ts` | 33 | Port to feature module |
-| Employee dashboard | 25 files (`EmployeeDashboard.tsx`, 19 components, `Calendar.tsx`, 4 sections) | ~4,770 | Port; Calendar placeholder replaced with real calendar |
-| Manager dashboard | 26 files (`ManagerDashboard.tsx`, 19 components, 6 sections) | ~5,130 | Port |
-| Admin employee console | `pages/admin/AdminEmployees.tsx` | 705 | Adapt into new admin console |
-| Admin shell | `pages/admin/AdminDashboard.tsx` | 136 | Replace with HRMS admin layout |
-| Login | `pages/Login.tsx` (only the employee/admin branches) | ~777 total | New HRMS `/login` page |
-| Website admin/pages | `AdminUsers`, `AdminCourses`, `AdminCareers`, `AdminSessions`, `AdminReviews`, `AdminHeroTutors`, `AdminStudents`, `AdminTrainers`, `AdminHome`, all marketing/student/trainer/sales pages | ~40k | **Drop permanently** |
-| Platform auth | `contexts/AuthContext.tsx`, `LoginModalContext`, `CurrencyContext`, `PrivateRoute`, `GoogleOAuthProvider` | ~500 | **Drop** (not HRMS) |
-| Brand assets | `assets/logo2.png` | — | Do not copy; use neutral HRMS mark |
+| Group                  | Files                                                                                                                                                                                      | Lines      | Stage 1 action                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- | ------------------------------------------------------- |
+| API client             | `lib/employeeApi.ts`                                                                                                                                                                       | 80         | Rewrite as `lib/api.ts` (single token, envelope unwrap) |
+| Auth context           | `contexts/EmployeeAuthContext.tsx`                                                                                                                                                         | 125        | Rewrite as `features/auth/AuthContext.tsx`              |
+| Route guard            | `components/EmployeePrivateRoute.tsx`                                                                                                                                                      | 36         | Rewrite as `app/routes/ProtectedRoute.tsx`              |
+| Domain types           | `types/Employee.ts`                                                                                                                                                                        | 321        | Split: shared DTOs + local view models                  |
+| Password hook          | `hooks/useChangePassword.tsx`                                                                                                                                                              | 39         | Adapt (single realm)                                    |
+| Active meeting         | `hooks/useActiveMeeting.tsx`                                                                                                                                                               | 230        | Port                                                    |
+| Meeting dialog         | `components/MeetingDialog.tsx`                                                                                                                                                             | 543        | Port; no generated link                                 |
+| Shared utils           | `utils/getInitials.ts`, `utils/getImageUrl.ts`                                                                                                                                             | ~70        | Port / replace file URL resolver                        |
+| Attendance rules       | `pages/EmployeeDashboard/components/attendanceRules.ts`                                                                                                                                    | 328        | **Move to shared**; frontend re-export                  |
+| Attendance live        | `pages/EmployeeDashboard/components/attendanceLive.ts`                                                                                                                                     | 33         | Port to feature module                                  |
+| Employee dashboard     | 25 files (`EmployeeDashboard.tsx`, 19 components, `Calendar.tsx`, 4 sections)                                                                                                              | ~4,770     | Port; Calendar placeholder replaced with real calendar  |
+| Manager dashboard      | 26 files (`ManagerDashboard.tsx`, 19 components, 6 sections)                                                                                                                               | ~5,130     | Port                                                    |
+| Admin employee console | `pages/admin/AdminEmployees.tsx`                                                                                                                                                           | 705        | Adapt into new admin console                            |
+| Admin shell            | `pages/admin/AdminDashboard.tsx`                                                                                                                                                           | 136        | Replace with HRMS admin layout                          |
+| Login                  | `pages/Login.tsx` (only the employee/admin branches)                                                                                                                                       | ~777 total | New HRMS `/login` page                                  |
+| Website admin/pages    | `AdminUsers`, `AdminCourses`, `AdminCareers`, `AdminSessions`, `AdminReviews`, `AdminHeroTutors`, `AdminStudents`, `AdminTrainers`, `AdminHome`, all marketing/student/trainer/sales pages | ~40k       | **Drop permanently**                                    |
+| Platform auth          | `contexts/AuthContext.tsx`, `LoginModalContext`, `CurrencyContext`, `PrivateRoute`, `GoogleOAuthProvider`                                                                                  | ~500       | **Drop** (not HRMS)                                     |
+| Brand assets           | `assets/logo2.png`                                                                                                                                                                         | —          | Do not copy; use neutral HRMS mark                      |
 
 **Frontend total to migrate:** ~11,800 lines across ~61 files.
 
 ### 2.3 Donor frontend routes
 
-| Route | Screen | Stage 1 route |
-| --- | --- | --- |
-| `/employee` | Dashboard (attendance, summary, activity, meetings) | `/employee` |
-| `/employee/my-tasks` | Tasks + queries | `/employee/tasks` |
-| `/employee/apply-leave` | Leave balance, form, history | `/employee/leave` |
-| `/employee/profile` | Profile + avatar | `/employee/profile` |
-| `/employee/settings` | Change password | `/employee/settings` |
-| `/manager` | Manager dashboard | `/manager` |
-| `/manager/assigned-tasks` | All assigned tasks | `/manager/tasks` |
-| `/manager/team-members` | Team directory + detail | `/manager/team` |
-| `/manager/reports` | Monthly team reports | `/manager/reports` |
-| `/manager/queries` | Query review + calendar | `/manager/queries` |
-| `/manager/profile` | Profile | `/manager/profile` |
-| `/manager/settings` | Change password | `/manager/settings` |
-| `/admin/employees` | Staff directory + CRUD | `/admin/employees` |
-| `/admin` | Website admin home | **Replaced** by HRMS admin overview |
-| — | No HRMS login page (global modal) | `/login` (new) |
+| Route                     | Screen                                              | Stage 1 route                       |
+| ------------------------- | --------------------------------------------------- | ----------------------------------- |
+| `/employee`               | Dashboard (attendance, summary, activity, meetings) | `/employee`                         |
+| `/employee/my-tasks`      | Tasks + queries                                     | `/employee/tasks`                   |
+| `/employee/apply-leave`   | Leave balance, form, history                        | `/employee/leave`                   |
+| `/employee/profile`       | Profile + avatar                                    | `/employee/profile`                 |
+| `/employee/settings`      | Change password                                     | `/employee/settings`                |
+| `/manager`                | Manager dashboard                                   | `/manager`                          |
+| `/manager/assigned-tasks` | All assigned tasks                                  | `/manager/tasks`                    |
+| `/manager/team-members`   | Team directory + detail                             | `/manager/team`                     |
+| `/manager/reports`        | Monthly team reports                                | `/manager/reports`                  |
+| `/manager/queries`        | Query review + calendar                             | `/manager/queries`                  |
+| `/manager/profile`        | Profile                                             | `/manager/profile`                  |
+| `/manager/settings`       | Change password                                     | `/manager/settings`                 |
+| `/admin/employees`        | Staff directory + CRUD                              | `/admin/employees`                  |
+| `/admin`                  | Website admin home                                  | **Replaced** by HRMS admin overview |
+| —                         | No HRMS login page (global modal)                   | `/login` (new)                      |
 
 `EmployeeDashboard/Calendar.tsx` is a **placeholder** in the donor and is not routed. Stage 1 must not ship a placeholder: implement a real month view backed by `GET /api/v1/calendar/events`, reusing the manager `SimpleCalendar` component.
 
@@ -203,128 +203,128 @@ Access column = Stage 1 access. `all` means every authenticated employee.
 
 #### Auth and profile (7)
 
-| # | Method | Path (donor) | Access | Consumer | Notes |
-| --- | --- | --- | --- | --- | --- |
-| 1 | POST | `/auth/admin-login` | public | login | **Replaced** by unified `/auth/login` |
-| 2 | POST | `/auth/login` | public | login | Keep; returns `{token, employee}` |
-| 3 | GET | `/auth/me` | admin (bug) | — | **Fixed** as unified `GET /auth/me` |
-| 4 | PUT | `/auth/admin/change-password` | admin | settings | **Replaced** by unified change-password |
-| 5 | PUT | `/auth/change-password` | employee | settings | Keep |
-| 6 | GET | `/me` | employee | profile | Keep |
-| 7 | PUT | `/me` | employee | profile | Keep |
+| #   | Method | Path (donor)                  | Access      | Consumer | Notes                                   |
+| --- | ------ | ----------------------------- | ----------- | -------- | --------------------------------------- |
+| 1   | POST   | `/auth/admin-login`           | public      | login    | **Replaced** by unified `/auth/login`   |
+| 2   | POST   | `/auth/login`                 | public      | login    | Keep; returns `{token, employee}`       |
+| 3   | GET    | `/auth/me`                    | admin (bug) | —        | **Fixed** as unified `GET /auth/me`     |
+| 4   | PUT    | `/auth/admin/change-password` | admin       | settings | **Replaced** by unified change-password |
+| 5   | PUT    | `/auth/change-password`       | employee    | settings | Keep                                    |
+| 6   | GET    | `/me`                         | employee    | profile  | Keep                                    |
+| 7   | PUT    | `/me`                         | employee    | profile  | Keep                                    |
 
 #### Admin / employee management (9)
 
-| # | Method | Path | Access | Consumer | Notes |
-| --- | --- | --- | --- | --- | --- |
-| 8 | GET | `/admin/stats` | admin | admin overview | Keep |
-| 9 | GET | `/admin/managers` | admin | employee form | Keep |
-| 10 | POST | `/admin/employees` | admin | admin employees | Keep; role ceiling |
-| 11 | GET | `/admin/employees` | admin | admin employees | Keep; paginated |
-| 12 | GET | `/admin/employees/:id` | admin | admin edit | Keep |
-| 13 | PUT | `/admin/employees/:id` | admin | admin edit | Keep; C1 fix |
-| 14 | DELETE | `/admin/employees/:id` | admin | deactivate | Keep (soft delete) |
-| 15 | PATCH | `/admin/employees/:id/status` | admin | reactivate | Keep |
-| 16 | POST | `/admin/tasks` | admin | admin assign | Keep (no UI in donor; keep API + add action) |
+| #   | Method | Path                          | Access | Consumer        | Notes                                        |
+| --- | ------ | ----------------------------- | ------ | --------------- | -------------------------------------------- |
+| 8   | GET    | `/admin/stats`                | admin  | admin overview  | Keep                                         |
+| 9   | GET    | `/admin/managers`             | admin  | employee form   | Keep                                         |
+| 10  | POST   | `/admin/employees`            | admin  | admin employees | Keep; role ceiling                           |
+| 11  | GET    | `/admin/employees`            | admin  | admin employees | Keep; paginated                              |
+| 12  | GET    | `/admin/employees/:id`        | admin  | admin edit      | Keep                                         |
+| 13  | PUT    | `/admin/employees/:id`        | admin  | admin edit      | Keep; C1 fix                                 |
+| 14  | DELETE | `/admin/employees/:id`        | admin  | deactivate      | Keep (soft delete)                           |
+| 15  | PATCH  | `/admin/employees/:id/status` | admin  | reactivate      | Keep                                         |
+| 16  | POST   | `/admin/tasks`                | admin  | admin assign    | Keep (no UI in donor; keep API + add action) |
 
 #### Attendance — self (7)
 
-| # | Method | Path | Access | Consumer |
-| --- | --- | --- | --- | --- |
-| 17 | POST | `/attendance/check-in` | self | TodayAttendance |
-| 18 | POST | `/attendance/check-out` | self | TodayAttendance |
-| 19 | POST | `/attendance/break/start` | self | TodayAttendance |
-| 20 | POST | `/attendance/break/end` | self | TodayAttendance |
-| 21 | GET | `/attendance/today` | self | TodayAttendance |
-| 22 | GET | `/attendance/month` | self | AttendanceDetails |
-| 23 | GET | `/attendance/summary` | self | work summary |
+| #   | Method | Path                      | Access | Consumer          |
+| --- | ------ | ------------------------- | ------ | ----------------- |
+| 17  | POST   | `/attendance/check-in`    | self   | TodayAttendance   |
+| 18  | POST   | `/attendance/check-out`   | self   | TodayAttendance   |
+| 19  | POST   | `/attendance/break/start` | self   | TodayAttendance   |
+| 20  | POST   | `/attendance/break/end`   | self   | TodayAttendance   |
+| 21  | GET    | `/attendance/today`       | self   | TodayAttendance   |
+| 22  | GET    | `/attendance/month`       | self   | AttendanceDetails |
+| 23  | GET    | `/attendance/summary`     | self   | work summary      |
 
 #### Leave — self (6)
 
-| # | Method | Path | Access | Consumer |
-| --- | --- | --- | --- | --- |
-| 24 | GET | `/leave/balance` | self | LeaveBalance |
-| 25 | POST | `/leave` | self | NewLeaveRequestForm |
-| 26 | POST | `/leave/draft` | self | form (draft) |
-| 27 | PUT | `/leave/:id/draft` | self, owner | history |
-| 28 | POST | `/leave/:id/cancel` | self, owner | history |
-| 29 | GET | `/leave/history` | self | LeaveHistoryTable |
+| #   | Method | Path                | Access      | Consumer            |
+| --- | ------ | ------------------- | ----------- | ------------------- |
+| 24  | GET    | `/leave/balance`    | self        | LeaveBalance        |
+| 25  | POST   | `/leave`            | self        | NewLeaveRequestForm |
+| 26  | POST   | `/leave/draft`      | self        | form (draft)        |
+| 27  | PUT    | `/leave/:id/draft`  | self, owner | history             |
+| 28  | POST   | `/leave/:id/cancel` | self, owner | history             |
+| 29  | GET    | `/leave/history`    | self        | LeaveHistoryTable   |
 
 #### Tasks (7)
 
-| # | Method | Path | Access | Consumer |
-| --- | --- | --- | --- | --- |
-| 30 | GET | `/tasks` | self | TasksDetails |
-| 31 | POST | `/tasks` | manager+ | AssignTaskForm |
-| 32 | GET | `/tasks/team` | manager+ | AllTasksTable |
-| 33 | GET | `/tasks/team/summary` | manager+ | TaskSummary |
-| 34 | GET | `/tasks/:id` | assignee / assigner | TasksDetails |
-| 35 | GET | `/tasks/:taskId/attachments/:index/url` | task participants | attachment link |
-| 36 | PATCH | `/tasks/:id/status` | assignee / assigner | TasksDetails |
+| #   | Method | Path                                    | Access              | Consumer        |
+| --- | ------ | --------------------------------------- | ------------------- | --------------- |
+| 30  | GET    | `/tasks`                                | self                | TasksDetails    |
+| 31  | POST   | `/tasks`                                | manager+            | AssignTaskForm  |
+| 32  | GET    | `/tasks/team`                           | manager+            | AllTasksTable   |
+| 33  | GET    | `/tasks/team/summary`                   | manager+            | TaskSummary     |
+| 34  | GET    | `/tasks/:id`                            | assignee / assigner | TasksDetails    |
+| 35  | GET    | `/tasks/:taskId/attachments/:index/url` | task participants   | attachment link |
+| 36  | PATCH  | `/tasks/:id/status`                     | assignee / assigner | TasksDetails    |
 
 #### Queries (5)
 
-| # | Method | Path | Access | Consumer |
-| --- | --- | --- | --- | --- |
-| 37 | GET | `/queries/team` | manager+ | ManagerQueries |
-| 38 | POST | `/queries/:id/review` | manager+ (team) / admin | WriteReview |
-| 39 | POST | `/queries` | self | EmployeeQuery |
-| 40 | GET | `/queries` | self | AllQueries |
-| 41 | GET | `/queries/stats` | self / manager | Querystats |
+| #   | Method | Path                  | Access                  | Consumer       |
+| --- | ------ | --------------------- | ----------------------- | -------------- |
+| 37  | GET    | `/queries/team`       | manager+                | ManagerQueries |
+| 38  | POST   | `/queries/:id/review` | manager+ (team) / admin | WriteReview    |
+| 39  | POST   | `/queries`            | self                    | EmployeeQuery  |
+| 40  | GET    | `/queries`            | self                    | AllQueries     |
+| 41  | GET    | `/queries/stats`      | self / manager          | Querystats     |
 
 #### Meetings and calendar (6)
 
-| # | Method | Path | Access | Consumer |
-| --- | --- | --- | --- | --- |
-| 42 | GET | `/meetings` | participant | MeetingSummary |
-| 43 | GET | `/meetings/active` | organizer | useActiveMeeting |
-| 44 | POST | `/meetings` | self | MeetingDialog |
-| 45 | POST | `/meetings/:id/start` | organizer | MeetingDialog |
-| 46 | POST | `/meetings/:id/end` | organizer | MeetingDialog |
-| 47 | GET | `/calendar/events` | self | SimpleCalendar |
+| #   | Method | Path                  | Access      | Consumer         |
+| --- | ------ | --------------------- | ----------- | ---------------- |
+| 42  | GET    | `/meetings`           | participant | MeetingSummary   |
+| 43  | GET    | `/meetings/active`    | organizer   | useActiveMeeting |
+| 44  | POST   | `/meetings`           | self        | MeetingDialog    |
+| 45  | POST   | `/meetings/:id/start` | organizer   | MeetingDialog    |
+| 46  | POST   | `/meetings/:id/end`   | organizer   | MeetingDialog    |
+| 47  | GET    | `/calendar/events`    | self        | SimpleCalendar   |
 
 #### Dashboards and directory (2)
 
-| # | Method | Path | Access | Consumer |
-| --- | --- | --- | --- | --- |
-| 48 | GET | `/dashboard` | self | EmployeeDashboard |
-| 49 | GET | `/colleagues` | self | MeetingDialog |
+| #   | Method | Path          | Access | Consumer          |
+| --- | ------ | ------------- | ------ | ----------------- |
+| 48  | GET    | `/dashboard`  | self   | EmployeeDashboard |
+| 49  | GET    | `/colleagues` | self   | MeetingDialog     |
 
 #### Manager / team (14)
 
-| # | Method | Path | Access | Consumer |
-| --- | --- | --- | --- | --- |
-| 50 | GET | `/team` | manager+ | My-employee |
-| 51 | POST | `/team` | manager+ | team member create |
-| 52 | GET | `/team/attendance` | manager+ | TeamAttendanceTable |
-| 53 | GET | `/team/available` | manager+ | AvailableEmployees |
-| 54 | POST | `/team/assign` | manager+ | add report |
-| 55 | DELETE | `/team/assign/:id` | manager+ | remove report |
-| 56 | GET | `/team/attendance/stats` | manager+ | CurrentActivity |
-| 57 | GET | `/team/attendance/rows` | manager+ | TeamAttendanceTable |
-| 58 | GET | `/team/attendance/month` | manager+ | attendance month |
-| 59 | GET | `/team/reports` | manager+ | ManagerReports |
-| 60 | GET | `/team/member/:id` | manager+, team | team detail |
-| 61 | GET | `/team/leave/pending` | manager+ | PendingLeaveRequests |
-| 62 | PATCH | `/team/leave/:id/status` | manager+, team | approve/reject |
-| 63 | GET | `/managers-dashboard` | manager+ | ManagerDashboard |
+| #   | Method | Path                     | Access         | Consumer             |
+| --- | ------ | ------------------------ | -------------- | -------------------- |
+| 50  | GET    | `/team`                  | manager+       | My-employee          |
+| 51  | POST   | `/team`                  | manager+       | team member create   |
+| 52  | GET    | `/team/attendance`       | manager+       | TeamAttendanceTable  |
+| 53  | GET    | `/team/available`        | manager+       | AvailableEmployees   |
+| 54  | POST   | `/team/assign`           | manager+       | add report           |
+| 55  | DELETE | `/team/assign/:id`       | manager+       | remove report        |
+| 56  | GET    | `/team/attendance/stats` | manager+       | CurrentActivity      |
+| 57  | GET    | `/team/attendance/rows`  | manager+       | TeamAttendanceTable  |
+| 58  | GET    | `/team/attendance/month` | manager+       | attendance month     |
+| 59  | GET    | `/team/reports`          | manager+       | ManagerReports       |
+| 60  | GET    | `/team/member/:id`       | manager+, team | team detail          |
+| 61  | GET    | `/team/leave/pending`    | manager+       | PendingLeaveRequests |
+| 62  | PATCH  | `/team/leave/:id/status` | manager+, team | approve/reject       |
+| 63  | GET    | `/managers-dashboard`    | manager+       | ManagerDashboard     |
 
 **Total: 63/63.** Stage 1 also adds 3 file endpoints (`POST /files`, `GET /files/:id`, `DELETE /files/:id`), for 66 routes.
 
 ### 2.5 Models and relationships
 
-| Donor model | Collection | Key fields | Stage 1 changes |
-| --- | --- | --- | --- |
-| `Employee` | `employees` | email, password, role, firstName, lastName, phone, department (string), designation, employeeCode, manager, job{joinDate,endDate,status,isActive}, personal{...}, profile{bio,imageUrl,dob,address,skills}, leaveBalances{casual,sick,earned,unpaid}{total,used} | Add `organizationId`; role enum `admin\|manager\|employee`; `profile.avatarFileId`; keep string department; keep counters |
-| `Attendance` | `employeeattendances` | employee, date, status, checkIn/checkOut, sessions[], breakStart/End, breaks[], breakMinutes, workingMinutes, overtimeMinutes, tasksCompleted, markedBy, note | Add `organizationId`; unique `(employee,date)` retained; fix `markedBy` ref |
-| `LeaveRequest` | `employeeleaverequests` | employee, manager, leaveType, dayType, fromDate, toDate, days, reason, contact, attachments[], status, reviewer, note, reviewedAt | Add `organizationId`; attachments become `FileResource` ids |
-| `Task` | `employeetasks` | taskId, title, description, assignedTo, assignedBy, dueDate, priority, status, completedAt, attachments[] | Add `organizationId`; attachments become file ids |
-| `EmployeeQuery` | `employeequeries` | employee, task, message, status, reviewedBy, review, reviewedAt, attachments[] | Add `organizationId`; fix manager filter |
-| `Meeting` | `employeemeetings` | organizer, title, meetingLink, participants[], startTime, endTime, durationMin, status, actualStartedAt/EndedAt, expectedDuration/EndAt, actualDuration | Add `organizationId`; link optional; no generator |
-| `ActivityLog` | `employeeactivitylogs` | employee, type, at, meta | Add `organizationId`; align type enum |
-| `Counter` | `employeecounters` | key, seq | Add `organizationId` to key (Stage 2 multi-tenant safe) |
-| `EmployeeAdmin` | `employeeadmins` | name, email, password, isSuperAdmin, isActive | **Dropped** |
-| `Organization` | — | — | **New** (singleton in Stage 1: name, slug, status) |
+| Donor model     | Collection              | Key fields                                                                                                                                                                                                                                                       | Stage 1 changes                                                                                                           |
+| --------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `Employee`      | `employees`             | email, password, role, firstName, lastName, phone, department (string), designation, employeeCode, manager, job{joinDate,endDate,status,isActive}, personal{...}, profile{bio,imageUrl,dob,address,skills}, leaveBalances{casual,sick,earned,unpaid}{total,used} | Add `organizationId`; role enum `admin\|manager\|employee`; `profile.avatarFileId`; keep string department; keep counters |
+| `Attendance`    | `employeeattendances`   | employee, date, status, checkIn/checkOut, sessions[], breakStart/End, breaks[], breakMinutes, workingMinutes, overtimeMinutes, tasksCompleted, markedBy, note                                                                                                    | Add `organizationId`; unique `(employee,date)` retained; fix `markedBy` ref                                               |
+| `LeaveRequest`  | `employeeleaverequests` | employee, manager, leaveType, dayType, fromDate, toDate, days, reason, contact, attachments[], status, reviewer, note, reviewedAt                                                                                                                                | Add `organizationId`; attachments become `FileResource` ids                                                               |
+| `Task`          | `employeetasks`         | taskId, title, description, assignedTo, assignedBy, dueDate, priority, status, completedAt, attachments[]                                                                                                                                                        | Add `organizationId`; attachments become file ids                                                                         |
+| `EmployeeQuery` | `employeequeries`       | employee, task, message, status, reviewedBy, review, reviewedAt, attachments[]                                                                                                                                                                                   | Add `organizationId`; fix manager filter                                                                                  |
+| `Meeting`       | `employeemeetings`      | organizer, title, meetingLink, participants[], startTime, endTime, durationMin, status, actualStartedAt/EndedAt, expectedDuration/EndAt, actualDuration                                                                                                          | Add `organizationId`; link optional; no generator                                                                         |
+| `ActivityLog`   | `employeeactivitylogs`  | employee, type, at, meta                                                                                                                                                                                                                                         | Add `organizationId`; align type enum                                                                                     |
+| `Counter`       | `employeecounters`      | key, seq                                                                                                                                                                                                                                                         | Add `organizationId` to key (Stage 2 multi-tenant safe)                                                                   |
+| `EmployeeAdmin` | `employeeadmins`        | name, email, password, isSuperAdmin, isActive                                                                                                                                                                                                                    | **Dropped**                                                                                                               |
+| `Organization`  | —                       | —                                                                                                                                                                                                                                                                | **New** (singleton in Stage 1: name, slug, status)                                                                        |
 
 ### 2.6 Tests to preserve
 
@@ -347,22 +347,22 @@ Stage 1 keeps all cases except the removed URL generator, and adds the security/
 
 ### 2.7 Dependencies
 
-| Side | Donor | Target | Action |
-| --- | --- | --- | --- |
-| Backend | Express 4.22 | Express 5.3 | Adapt async error handling, wildcard routes |
-| Backend | Mongoose 8.23 | Mongoose 9.12 | Check middleware/aggregation changes |
-| Backend | bcryptjs 2.4 | bcrypt 6 | Native module; 72-byte limit enforced |
-| Backend | moment-timezone | — | Not needed on backend (numeric minutes) |
-| Backend | AWS SDK (R2) | — | **Drop** |
-| Backend | — | `multer` (new) | Required for multipart uploads |
-| Backend | — | `zod` (declare) | Shared schemas at runtime |
-| Frontend | React 18.3 | React 19.3 | Fix legacy patterns, StrictMode double effects |
-| Frontend | RRD 6.20 | RRD 7.18 | API compatible; verify splat routes |
-| Frontend | Tailwind 3.4 | Tailwind 4.3 | `@import "tailwindcss"`; no config file needed |
-| Frontend | moment-timezone | — | Replace with `Intl` helpers |
-| Frontend | axios 1.6 | axios 1.21 | Keep |
-| Frontend | lucide-react 0.344 | 1.72 | Verify icon names |
-| Frontend | recharts, xlsx, bootstrap, react-bootstrap, framer-motion, file-saver | — | **Drop** (unused by HRMS screens) |
+| Side     | Donor                                                                 | Target          | Action                                         |
+| -------- | --------------------------------------------------------------------- | --------------- | ---------------------------------------------- |
+| Backend  | Express 4.22                                                          | Express 5.3     | Adapt async error handling, wildcard routes    |
+| Backend  | Mongoose 8.23                                                         | Mongoose 9.12   | Check middleware/aggregation changes           |
+| Backend  | bcryptjs 2.4                                                          | bcrypt 6        | Native module; 72-byte limit enforced          |
+| Backend  | moment-timezone                                                       | —               | Not needed on backend (numeric minutes)        |
+| Backend  | AWS SDK (R2)                                                          | —               | **Drop**                                       |
+| Backend  | —                                                                     | `multer` (new)  | Required for multipart uploads                 |
+| Backend  | —                                                                     | `zod` (declare) | Shared schemas at runtime                      |
+| Frontend | React 18.3                                                            | React 19.3      | Fix legacy patterns, StrictMode double effects |
+| Frontend | RRD 6.20                                                              | RRD 7.18        | API compatible; verify splat routes            |
+| Frontend | Tailwind 3.4                                                          | Tailwind 4.3    | `@import "tailwindcss"`; no config file needed |
+| Frontend | moment-timezone                                                       | —               | Replace with `Intl` helpers                    |
+| Frontend | axios 1.6                                                             | axios 1.21      | Keep                                           |
+| Frontend | lucide-react 0.344                                                    | 1.72            | Verify icon names                              |
+| Frontend | recharts, xlsx, bootstrap, react-bootstrap, framer-motion, file-saver | —               | **Drop** (unused by HRMS screens)              |
 
 ### 2.8 Explicitly not migrated
 
@@ -382,117 +382,117 @@ Stage 1 keeps all cases except the removed URL generator, and adds the security/
 
 Target root: `backend/src/`.
 
-| Donor | Target | Action |
-| --- | --- | --- |
-| `config/env.js` | `config/env.js` | Extend: `JWT_SECRET`, `JWT_EXPIRES_IN`, seed values, upload limits, timezone |
-| `errors/ApiError.js` | `shared/errors/ApiError.js` | Extend with code/status/details |
-| `validators/employee/util.validator.js` | `shared/validation/validate.js` | Rewrite: `parse(schema)`, `assertObjectId`, `badRequest`, `notFound`, `conflict`, `forbidden` |
-| `middleware/employeeAuth.js` | `middleware/auth.js` + `middleware/authorize.js` | Rewrite: one realm, `req.auth`, permission guard |
-| `routes/employeeRoutes.js` | `routes/index.js` + `modules/*/routes/*.routes.js` | Re-home under `/api/v1` |
-| `controllers/employee/authController.js` | `modules/auth/controllers/auth.controller.js` | Remove admin login; unified login/me/change-password |
-| `services/employee/auth.service.js` | `modules/auth/services/auth.service.js` | One token signer; sanitize employee |
-| `controllers/employee/adminController.js` | `modules/employees/controllers/employees.controller.js`, `team.controller.js` | Split |
-| `controllers/employee/profileController.js` | `modules/employees/controllers/profile.controller.js` | Adapt; avatar file id |
-| `controllers/employee/attendanceController.js` | `modules/attendance/controllers/attendance.controller.js` | Port |
-| `services/employee/attendance.service.js` | `modules/attendance/services/attendance.service.js` | Port; policy resolver seam |
-| `validators/employee/attendance.constants.js` | `packages/shared/src/constants/attendance.ts` | Move (single source) |
-| `validators/employee/attendance.validator.js` | `packages/shared/src/lib/attendance.ts` + `modules/attendance/services/attendance.math.js` | Split pure math vs service |
-| `models/employee/Attendance.js` | `modules/attendance/models/Attendance.js` | Add `organizationId` |
-| `controllers/employee/leaveController.js` | `modules/leave/controllers/leave.controller.js` | Port |
-| `services/employee/leave.service.js` | `modules/leave/services/leave.service.js` | Port; atomic approve; cancel restore |
-| `validators/employee/leave.validator.js` | `modules/leave/validators/leave.validator.js` + shared schema | Port |
-| `models/employee/LeaveRequest.js` | `modules/leave/models/LeaveRequest.js` | Add `organizationId` |
-| `controllers/employee/taskController.js` | `modules/tasks/controllers/task.controller.js` | Port; attachments via files |
-| `services/employee/task.service.js` | `modules/tasks/services/task.service.js` | Port |
-| `models/employee/Task.js` | `modules/tasks/models/Task.js` | Add `organizationId` |
-| `controllers/employee/queryController.js` | `modules/queries/controllers/query.controller.js` | Port |
-| `services/employee/query.service.js` | `modules/queries/services/query.service.js` | Port; fix team filter |
-| `models/employee/EmployeeQuery.js` | `modules/queries/models/EmployeeQuery.js` | Add `organizationId` |
-| `controllers/employee/meetingController.js` | `modules/meetings/controllers/meeting.controller.js` | Remove `generateMeetUrl` |
-| `models/employee/Meeting.js` | `modules/meetings/models/Meeting.js` | Add `organizationId` |
-| `services/employee/dashboard.service.js` | `modules/reports/services/dashboard.service.js` | Port; fix query bug |
-| `controllers/employee/dashboardController.js` | `modules/reports/controllers/dashboard.controller.js` | Port |
-| `services/employee/activity.service.js` | `modules/activity/services/activity.service.js` | Port |
-| `models/employee/ActivityLog.js` | `modules/activity/models/ActivityLog.js` | Add `organizationId` |
-| `models/employee/Employee.js` | `modules/employees/models/Employee.js` | Role + org + avatar |
-| `models/employee/Counter.js` | `shared/models/Counter.js` | Org-scoped key |
-| `models/employee/Admin.js` | — | **Drop** |
-| `services/employee/s3.service.js` | — | **Drop** |
-| `controllers/uploadController.js` | `modules/files/controllers/file.controller.js` | **Rewrite** (GridFS) |
-| `routes/uploadRoutes.js` | `modules/files/routes/file.routes.js` | **Rewrite** (auth) |
-| `seed/seedEmployees.mjs` | `seeds/seed.js` | Rewrite: env-only admin, demo data flag |
-| `test/employee/employee.test.js` | `test/unit/*.test.js`, `test/api/*.test.js` | Split by domain |
+| Donor                                          | Target                                                                                     | Action                                                                                        |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| `config/env.js`                                | `config/env.js`                                                                            | Extend: `JWT_SECRET`, `JWT_EXPIRES_IN`, seed values, upload limits, timezone                  |
+| `errors/ApiError.js`                           | `shared/errors/ApiError.js`                                                                | Extend with code/status/details                                                               |
+| `validators/employee/util.validator.js`        | `shared/validation/validate.js`                                                            | Rewrite: `parse(schema)`, `assertObjectId`, `badRequest`, `notFound`, `conflict`, `forbidden` |
+| `middleware/employeeAuth.js`                   | `middleware/auth.js` + `middleware/authorize.js`                                           | Rewrite: one realm, `req.auth`, permission guard                                              |
+| `routes/employeeRoutes.js`                     | `routes/index.js` + `modules/*/routes/*.routes.js`                                         | Re-home under `/api/v1`                                                                       |
+| `controllers/employee/authController.js`       | `modules/auth/controllers/auth.controller.js`                                              | Remove admin login; unified login/me/change-password                                          |
+| `services/employee/auth.service.js`            | `modules/auth/services/auth.service.js`                                                    | One token signer; sanitize employee                                                           |
+| `controllers/employee/adminController.js`      | `modules/employees/controllers/employees.controller.js`, `team.controller.js`              | Split                                                                                         |
+| `controllers/employee/profileController.js`    | `modules/employees/controllers/profile.controller.js`                                      | Adapt; avatar file id                                                                         |
+| `controllers/employee/attendanceController.js` | `modules/attendance/controllers/attendance.controller.js`                                  | Port                                                                                          |
+| `services/employee/attendance.service.js`      | `modules/attendance/services/attendance.service.js`                                        | Port; policy resolver seam                                                                    |
+| `validators/employee/attendance.constants.js`  | `packages/shared/src/constants/attendance.ts`                                              | Move (single source)                                                                          |
+| `validators/employee/attendance.validator.js`  | `packages/shared/src/lib/attendance.ts` + `modules/attendance/services/attendance.math.js` | Split pure math vs service                                                                    |
+| `models/employee/Attendance.js`                | `modules/attendance/models/Attendance.js`                                                  | Add `organizationId`                                                                          |
+| `controllers/employee/leaveController.js`      | `modules/leave/controllers/leave.controller.js`                                            | Port                                                                                          |
+| `services/employee/leave.service.js`           | `modules/leave/services/leave.service.js`                                                  | Port; atomic approve; cancel restore                                                          |
+| `validators/employee/leave.validator.js`       | `modules/leave/validators/leave.validator.js` + shared schema                              | Port                                                                                          |
+| `models/employee/LeaveRequest.js`              | `modules/leave/models/LeaveRequest.js`                                                     | Add `organizationId`                                                                          |
+| `controllers/employee/taskController.js`       | `modules/tasks/controllers/task.controller.js`                                             | Port; attachments via files                                                                   |
+| `services/employee/task.service.js`            | `modules/tasks/services/task.service.js`                                                   | Port                                                                                          |
+| `models/employee/Task.js`                      | `modules/tasks/models/Task.js`                                                             | Add `organizationId`                                                                          |
+| `controllers/employee/queryController.js`      | `modules/queries/controllers/query.controller.js`                                          | Port                                                                                          |
+| `services/employee/query.service.js`           | `modules/queries/services/query.service.js`                                                | Port; fix team filter                                                                         |
+| `models/employee/EmployeeQuery.js`             | `modules/queries/models/EmployeeQuery.js`                                                  | Add `organizationId`                                                                          |
+| `controllers/employee/meetingController.js`    | `modules/meetings/controllers/meeting.controller.js`                                       | Remove `generateMeetUrl`                                                                      |
+| `models/employee/Meeting.js`                   | `modules/meetings/models/Meeting.js`                                                       | Add `organizationId`                                                                          |
+| `services/employee/dashboard.service.js`       | `modules/reports/services/dashboard.service.js`                                            | Port; fix query bug                                                                           |
+| `controllers/employee/dashboardController.js`  | `modules/reports/controllers/dashboard.controller.js`                                      | Port                                                                                          |
+| `services/employee/activity.service.js`        | `modules/activity/services/activity.service.js`                                            | Port                                                                                          |
+| `models/employee/ActivityLog.js`               | `modules/activity/models/ActivityLog.js`                                                   | Add `organizationId`                                                                          |
+| `models/employee/Employee.js`                  | `modules/employees/models/Employee.js`                                                     | Role + org + avatar                                                                           |
+| `models/employee/Counter.js`                   | `shared/models/Counter.js`                                                                 | Org-scoped key                                                                                |
+| `models/employee/Admin.js`                     | —                                                                                          | **Drop**                                                                                      |
+| `services/employee/s3.service.js`              | —                                                                                          | **Drop**                                                                                      |
+| `controllers/uploadController.js`              | `modules/files/controllers/file.controller.js`                                             | **Rewrite** (GridFS)                                                                          |
+| `routes/uploadRoutes.js`                       | `modules/files/routes/file.routes.js`                                                      | **Rewrite** (auth)                                                                            |
+| `seed/seedEmployees.mjs`                       | `seeds/seed.js`                                                                            | Rewrite: env-only admin, demo data flag                                                       |
+| `test/employee/employee.test.js`               | `test/unit/*.test.js`, `test/api/*.test.js`                                                | Split by domain                                                                               |
 
 New backend files:
 
-| Target | Purpose |
-| --- | --- |
-| `shared/http/respond.js` | `ok`, `created`, `fail` envelope helpers |
-| `shared/http/errors.js` | Error middleware, `notFound`, code mapping |
-| `shared/tenant.js` | `resolveTenant()` singleton; Stage 2 replaces implementation |
-| `shared/pagination.js` | Parse/validate `page`, `pageSize`, build `{ items, meta }` |
-| `modules/files/models/File.js` | File metadata (key, scope, refId, owner, org) |
-| `modules/files/services/storage.service.js` | GridFS adapter (internal) |
-| `modules/files/services/file.service.js` | Access rules, validation |
-| `modules/calendar/routes/calendar.routes.js` | Aggregated events |
-| `modules/calendar/services/calendar.service.js` | Meetings + tasks + leave + queries |
-| `seeds/seed.js` | Admin + optional demo data |
-| `test/helpers/api.js` | Boot app on ephemeral port, login helper |
+| Target                                          | Purpose                                                      |
+| ----------------------------------------------- | ------------------------------------------------------------ |
+| `shared/http/respond.js`                        | `ok`, `created`, `fail` envelope helpers                     |
+| `shared/http/errors.js`                         | Error middleware, `notFound`, code mapping                   |
+| `shared/tenant.js`                              | `resolveTenant()` singleton; Stage 2 replaces implementation |
+| `shared/pagination.js`                          | Parse/validate `page`, `pageSize`, build `{ items, meta }`   |
+| `modules/files/models/File.js`                  | File metadata (key, scope, refId, owner, org)                |
+| `modules/files/services/storage.service.js`     | GridFS adapter (internal)                                    |
+| `modules/files/services/file.service.js`        | Access rules, validation                                     |
+| `modules/calendar/routes/calendar.routes.js`    | Aggregated events                                            |
+| `modules/calendar/services/calendar.service.js` | Meetings + tasks + leave + queries                           |
+| `seeds/seed.js`                                 | Admin + optional demo data                                   |
+| `test/helpers/api.js`                           | Boot app on ephemeral port, login helper                     |
 
 ### 3.2 Frontend
 
 Target root: `frontend/src/`.
 
-| Donor | Target | Action |
-| --- | --- | --- |
-| `lib/employeeApi.ts` | `lib/api.ts` + `features/auth/session.ts` | Single `hrms_token`; envelope unwrap; 401 logout |
-| `contexts/EmployeeAuthContext.tsx` | `features/auth/AuthContext.tsx` | Login/me/logout; role from `/me` |
-| `components/EmployeePrivateRoute.tsx` | `app/routes/ProtectedRoute.tsx` | Role/permission guard |
-| `hooks/useChangePassword.tsx` | `features/auth/useChangePassword.ts` | Employee realm only |
-| `hooks/useActiveMeeting.tsx` | `features/meetings/useActiveMeeting.tsx` | Port |
-| `components/MeetingDialog.tsx` | `features/meetings/MeetingDialog.tsx` | Port; user link |
-| `types/Employee.ts` | `types/*.ts` + `@hrms/shared` | Split DTOs vs view models |
-| `utils/getInitials.ts` | `lib/getInitials.ts` | Port |
-| `utils/getImageUrl.ts` | `lib/files.ts` | Replace signed URL with `/api/v1/files/:id` |
-| `EmployeeDashboard/components/attendanceRules.ts` | re-export `@hrms/shared/lib/attendance` | Delete duplicate constants |
-| `EmployeeDashboard/components/attendanceLive.ts` | `features/attendance/live.ts` | Port |
-| `EmployeeDashboard/EmployeeDashboard.tsx` | `pages/employee/EmployeeDashboard.tsx` | Port |
-| `EmployeeDashboard/components/Header.tsx`, `Sidebar.tsx` | `features/employee/components/` | Replace `useAuth` |
-| `AttendanceDetails`, `TodayAttendance`, `WorkSummary`, `TodaysWorkSummary` | `features/attendance/components/` | Port |
-| `LeaveBalance`, `LeaveHistoryTable`, `NewLeaveRequestForm` | `features/leave/components/` | Port |
-| `TasksDetails`, `EmployeeQuery`, `AllQueries`, `MeetingSummary`, `RecentActivity` | `features/{tasks,queries,meetings,activity}/components/` | Port |
-| `Sections/ApplyForLeave.tsx` | `pages/employee/LeavePage.tsx` | Compose feature components |
-| `Sections/MyTasks.tsx` | `pages/employee/TasksPage.tsx` | Compose |
-| `Sections/EmployeeProfile.tsx` | `pages/employee/ProfilePage.tsx` | Rewrite upload |
-| `Sections/EmployeePasswordSetting.tsx` | `pages/employee/SettingsPage.tsx` | Reuse hook |
-| `Calendar.tsx` (placeholder) | `pages/employee/CalendarPage.tsx` | **Implement** real calendar |
-| `ManagerDashboard/ManagerDashboard.tsx` | `pages/manager/ManagerDashboard.tsx` | Port |
-| Manager `Header`, `Sidebar`, `TodayAttendance`, `CurrentActivity`, `QuickActions`, `AlertNotification` | `features/manager/components/` | Port |
-| `PendingLeaveRequests`, `TeamAttendancetable`, `Assigntaskform`, `Alltaskstable`, `Tasksummary`, `Availableemployees` | `features/{leave,tasks,team}/components/` | Port |
-| `WriteReview`, `Managerqueries`, `Queryreviewform` | `features/queries/components/` + `pages/manager/QueriesPage.tsx` | Port |
-| `CalendarWidget`, `Simplecalendar` | `features/calendar/components/` | Port; real events |
-| `ManagerReports`, `My-employee`, `ManagerProfile`, `ManagerPasswordSettings`, `AssignedTasks` | `pages/manager/*` | Port |
-| `pages/admin/AdminEmployees.tsx` | `pages/admin/EmployeesPage.tsx` | Adapt (single API client, role ceiling) |
-| `pages/admin/AdminDashboard.tsx` | `components/layouts/AdminLayout.tsx` + `app/routes` | Replace shell |
-| `pages/Login.tsx` (employee branch) | `pages/auth/Login.tsx` | New focused login |
-| `index.css` custom utilities (`loading-dots`) | `styles/utilities.css` | Port only what HRMS uses |
+| Donor                                                                                                                 | Target                                                           | Action                                           |
+| --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------ |
+| `lib/employeeApi.ts`                                                                                                  | `lib/api.ts` + `features/auth/session.ts`                        | Single `hrms_token`; envelope unwrap; 401 logout |
+| `contexts/EmployeeAuthContext.tsx`                                                                                    | `features/auth/AuthContext.tsx`                                  | Login/me/logout; role from `/me`                 |
+| `components/EmployeePrivateRoute.tsx`                                                                                 | `app/routes/ProtectedRoute.tsx`                                  | Role/permission guard                            |
+| `hooks/useChangePassword.tsx`                                                                                         | `features/auth/useChangePassword.ts`                             | Employee realm only                              |
+| `hooks/useActiveMeeting.tsx`                                                                                          | `features/meetings/useActiveMeeting.tsx`                         | Port                                             |
+| `components/MeetingDialog.tsx`                                                                                        | `features/meetings/MeetingDialog.tsx`                            | Port; user link                                  |
+| `types/Employee.ts`                                                                                                   | `types/*.ts` + `@hrms/shared`                                    | Split DTOs vs view models                        |
+| `utils/getInitials.ts`                                                                                                | `lib/getInitials.ts`                                             | Port                                             |
+| `utils/getImageUrl.ts`                                                                                                | `lib/files.ts`                                                   | Replace signed URL with `/api/v1/files/:id`      |
+| `EmployeeDashboard/components/attendanceRules.ts`                                                                     | re-export `@hrms/shared/lib/attendance`                          | Delete duplicate constants                       |
+| `EmployeeDashboard/components/attendanceLive.ts`                                                                      | `features/attendance/live.ts`                                    | Port                                             |
+| `EmployeeDashboard/EmployeeDashboard.tsx`                                                                             | `pages/employee/EmployeeDashboard.tsx`                           | Port                                             |
+| `EmployeeDashboard/components/Header.tsx`, `Sidebar.tsx`                                                              | `features/employee/components/`                                  | Replace `useAuth`                                |
+| `AttendanceDetails`, `TodayAttendance`, `WorkSummary`, `TodaysWorkSummary`                                            | `features/attendance/components/`                                | Port                                             |
+| `LeaveBalance`, `LeaveHistoryTable`, `NewLeaveRequestForm`                                                            | `features/leave/components/`                                     | Port                                             |
+| `TasksDetails`, `EmployeeQuery`, `AllQueries`, `MeetingSummary`, `RecentActivity`                                     | `features/{tasks,queries,meetings,activity}/components/`         | Port                                             |
+| `Sections/ApplyForLeave.tsx`                                                                                          | `pages/employee/LeavePage.tsx`                                   | Compose feature components                       |
+| `Sections/MyTasks.tsx`                                                                                                | `pages/employee/TasksPage.tsx`                                   | Compose                                          |
+| `Sections/EmployeeProfile.tsx`                                                                                        | `pages/employee/ProfilePage.tsx`                                 | Rewrite upload                                   |
+| `Sections/EmployeePasswordSetting.tsx`                                                                                | `pages/employee/SettingsPage.tsx`                                | Reuse hook                                       |
+| `Calendar.tsx` (placeholder)                                                                                          | `pages/employee/CalendarPage.tsx`                                | **Implement** real calendar                      |
+| `ManagerDashboard/ManagerDashboard.tsx`                                                                               | `pages/manager/ManagerDashboard.tsx`                             | Port                                             |
+| Manager `Header`, `Sidebar`, `TodayAttendance`, `CurrentActivity`, `QuickActions`, `AlertNotification`                | `features/manager/components/`                                   | Port                                             |
+| `PendingLeaveRequests`, `TeamAttendancetable`, `Assigntaskform`, `Alltaskstable`, `Tasksummary`, `Availableemployees` | `features/{leave,tasks,team}/components/`                        | Port                                             |
+| `WriteReview`, `Managerqueries`, `Queryreviewform`                                                                    | `features/queries/components/` + `pages/manager/QueriesPage.tsx` | Port                                             |
+| `CalendarWidget`, `Simplecalendar`                                                                                    | `features/calendar/components/`                                  | Port; real events                                |
+| `ManagerReports`, `My-employee`, `ManagerProfile`, `ManagerPasswordSettings`, `AssignedTasks`                         | `pages/manager/*`                                                | Port                                             |
+| `pages/admin/AdminEmployees.tsx`                                                                                      | `pages/admin/EmployeesPage.tsx`                                  | Adapt (single API client, role ceiling)          |
+| `pages/admin/AdminDashboard.tsx`                                                                                      | `components/layouts/AdminLayout.tsx` + `app/routes`              | Replace shell                                    |
+| `pages/Login.tsx` (employee branch)                                                                                   | `pages/auth/Login.tsx`                                           | New focused login                                |
+| `index.css` custom utilities (`loading-dots`)                                                                         | `styles/utilities.css`                                           | Port only what HRMS uses                         |
 
 New frontend files:
 
-| Target | Purpose |
-| --- | --- |
-| `app/routes/AppRoutes.tsx` | Route table, lazy pages |
-| `app/providers/AppProviders.tsx` | Router + Auth provider |
-| `components/layouts/EmployeeLayout.tsx`, `ManagerLayout.tsx`, `AdminLayout.tsx` | Shared shell (sidebar + header + content) |
-| `components/ui/*` | Button, Input, Select, Modal, Badge, Table, EmptyState, Spinner |
-| `components/navigation/*` | Sidebar, Header, nav config |
-| `features/auth/api.ts` | Auth endpoints |
-| `lib/query.ts` | Minimal fetch-on-mount helper (no React Query) |
-| `lib/datetime.ts` | `Intl` Asia/Kolkata helpers |
-| `pages/auth/Login.tsx` | Login + role redirect |
-| `pages/admin/OverviewPage.tsx` | Stats + quick links |
-| `pages/NotFound.tsx` | 404 |
-| `styles/utilities.css` | Ported custom classes |
+| Target                                                                          | Purpose                                                         |
+| ------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `app/routes/AppRoutes.tsx`                                                      | Route table, lazy pages                                         |
+| `app/providers/AppProviders.tsx`                                                | Router + Auth provider                                          |
+| `components/layouts/EmployeeLayout.tsx`, `ManagerLayout.tsx`, `AdminLayout.tsx` | Shared shell (sidebar + header + content)                       |
+| `components/ui/*`                                                               | Button, Input, Select, Modal, Badge, Table, EmptyState, Spinner |
+| `components/navigation/*`                                                       | Sidebar, Header, nav config                                     |
+| `features/auth/api.ts`                                                          | Auth endpoints                                                  |
+| `lib/query.ts`                                                                  | Minimal fetch-on-mount helper (no React Query)                  |
+| `lib/datetime.ts`                                                               | `Intl` Asia/Kolkata helpers                                     |
+| `pages/auth/Login.tsx`                                                          | Login + role redirect                                           |
+| `pages/admin/OverviewPage.tsx`                                                  | Stats + quick links                                             |
+| `pages/NotFound.tsx`                                                            | 404                                                             |
+| `styles/utilities.css`                                                          | Ported custom classes                                           |
 
 ### 3.3 Shared package
 
@@ -500,13 +500,13 @@ Target root: `packages/shared/src/`. See §5 for the full keep/correct/defer/dro
 
 New in Stage 1:
 
-| File | Purpose |
-| --- | --- |
-| `lib/attendance.ts` | Kolkata minutes, day boundaries, status math (moved from donor frontend/validator) |
-| `lib/leave.ts` | `countLeaveDays`, working-day iteration |
-| `lib/normalize.ts` | MIME, filename, task status normalization |
-| `types/auth.ts` | `AuthPrincipal`, `AuthSession` |
-| `constants/errors.ts` | `API_ERROR_CODES` |
+| File                  | Purpose                                                                            |
+| --------------------- | ---------------------------------------------------------------------------------- |
+| `lib/attendance.ts`   | Kolkata minutes, day boundaries, status math (moved from donor frontend/validator) |
+| `lib/leave.ts`        | `countLeaveDays`, working-day iteration                                            |
+| `lib/normalize.ts`    | MIME, filename, task status normalization                                          |
+| `types/auth.ts`       | `AuthPrincipal`, `AuthSession`                                                     |
+| `constants/errors.ts` | `API_ERROR_CODES`                                                                  |
 
 ---
 
@@ -540,25 +540,25 @@ HTTP → helmet/cors/json → route → authenticate (JWT → Employee → req.a
 
 Roles: `admin`, `manager`, `employee` (additive).
 
-| Permission | admin | manager | employee |
-| --- | --- | --- | --- |
-| `employee:read:self` / `update:self` | ✓ | ✓ | ✓ |
-| `attendance:self` | ✓ | ✓ | ✓ |
-| `leave:self` | ✓ | ✓ | ✓ |
-| `task:self` | ✓ | ✓ | ✓ |
-| `query:self` | ✓ | ✓ | ✓ |
-| `meeting:self` | ✓ | ✓ | ✓ |
-| `file:upload` | ✓ | ✓ | ✓ |
-| `employee:read:team` | ✓ | ✓ | — |
-| `employee:read:all` | ✓ | — | — |
-| `employee:create` / `update` / `deactivate` | ✓ | — | — |
-| `team:manage` | ✓ | ✓ | — |
-| `attendance:read:team` / `all` | ✓ | team | — |
-| `leave:review:team` / `all` | ✓ | team | — |
-| `task:assign` / `read:team` | ✓ | ✓ | — |
-| `query:review` | ✓ | ✓ | — |
-| `report:read:team` / `all` | ✓ | team | — |
-| `settings:manage` | ✓ | — | — |
+| Permission                                  | admin | manager | employee |
+| ------------------------------------------- | ----- | ------- | -------- |
+| `employee:read:self` / `update:self`        | ✓     | ✓       | ✓        |
+| `attendance:self`                           | ✓     | ✓       | ✓        |
+| `leave:self`                                | ✓     | ✓       | ✓        |
+| `task:self`                                 | ✓     | ✓       | ✓        |
+| `query:self`                                | ✓     | ✓       | ✓        |
+| `meeting:self`                              | ✓     | ✓       | ✓        |
+| `file:upload`                               | ✓     | ✓       | ✓        |
+| `employee:read:team`                        | ✓     | ✓       | —        |
+| `employee:read:all`                         | ✓     | —       | —        |
+| `employee:create` / `update` / `deactivate` | ✓     | —       | —        |
+| `team:manage`                               | ✓     | ✓       | —        |
+| `attendance:read:team` / `all`              | ✓     | team    | —        |
+| `leave:review:team` / `all`                 | ✓     | team    | —        |
+| `task:assign` / `read:team`                 | ✓     | ✓       | —        |
+| `query:review`                              | ✓     | ✓       | —        |
+| `report:read:team` / `all`                  | ✓     | team    | —        |
+| `settings:manage`                           | ✓     | —       | —        |
 
 Role ceiling: `canAssignRole('admin', any)` = true; `canAssignRole('manager', 'employee')` = true; all others false. Managers create employees only through `/team`; the payload forces `role: "employee"` and `manager: self`. Nobody may change their own role.
 
@@ -616,56 +616,56 @@ Current: 29 files, 1,671 lines, 266 symbols. Stage 1 target: ~20 files, ~1,100 l
 
 ### 5.1 Keep
 
-| File | Reason |
-| --- | --- |
-| `constants/common.ts` | Page size/password limits used by both sides |
-| `constants/employee.ts` | Employment statuses, limits, activity types |
-| `constants/task.ts` | Donor status/priority strings and aliases |
-| `constants/query.ts` | Query statuses |
-| `constants/meeting.ts` | Statuses, duration limits |
-| `constants/file.ts` | Size/MIME policy + resource URL |
-| `types/api.ts` | Envelope, error body, pagination |
-| `types/task.ts`, `types/query.ts`, `types/attendance.ts` | Directly consumed by both sides |
-| `schemas/auth.ts` | Login/change-password |
-| `schemas/task.ts`, `schemas/query.ts`, `schemas/meeting.ts` | Request validation |
-| `schemas/file.ts` | Upload metadata/policy |
+| File                                                        | Reason                                       |
+| ----------------------------------------------------------- | -------------------------------------------- |
+| `constants/common.ts`                                       | Page size/password limits used by both sides |
+| `constants/employee.ts`                                     | Employment statuses, limits, activity types  |
+| `constants/task.ts`                                         | Donor status/priority strings and aliases    |
+| `constants/query.ts`                                        | Query statuses                               |
+| `constants/meeting.ts`                                      | Statuses, duration limits                    |
+| `constants/file.ts`                                         | Size/MIME policy + resource URL              |
+| `types/api.ts`                                              | Envelope, error body, pagination             |
+| `types/task.ts`, `types/query.ts`, `types/attendance.ts`    | Directly consumed by both sides              |
+| `schemas/auth.ts`                                           | Login/change-password                        |
+| `schemas/task.ts`, `schemas/query.ts`, `schemas/meeting.ts` | Request validation                           |
+| `schemas/file.ts`                                           | Upload metadata/policy                       |
 
 ### 5.2 Correct (blocking)
 
-| File | Correction |
-| --- | --- |
-| `constants/roles.ts` | Collapse to `admin\|manager\|employee`; add `canAssignRole`, `resolveReadScope`; split `employee:read:self/team/all`; keep Stage 2 matrix in the doc, not code |
-| `constants/attendance.ts` | Drop `ATTENDANCE_POLICY_DEFAULTS`; add `WORKING_WEEKDAYS`; add `kolkataMinutesOfDay`/day-boundary helpers to `lib/attendance.ts` |
-| `constants/leave.ts` | Keep donor types/statuses/defaults (12/10/15/0); remove ledger entry types from Stage 1 exports |
-| `types/employee.ts` | `department: string` (not `departmentId`); `managerId`; `profile.avatarFileId`; role 3-value; keep `organizationId`; remove `system_admin` buckets |
-| `types/leave.ts` | Replace ledger with `LeaveBalanceBucket { label,total,used,remaining }`; move `countLeaveDays` to `lib/leave.ts`; fix weekend half-day |
-| `types/file.ts` | Remove `StorageCapabilities`, `FileUploadResult.file`, exported `FileMetadata`; keep `FileResource` only |
-| `types/dashboard.ts` | Defer; replace with donor-aligned payloads when the pages are ported |
-| `schemas/common.ts` | Password max 72 bytes; strict boolean; email trim/lowercase |
-| `schemas/employee.ts` | **C1 fix**; strict; department string; no org field; role ceiling; no admin role in create |
-| `schemas/leave.ts` | Half-day single date; day count; remove ledger adjustment; keep review |
-| `schemas/file.ts` | Accept policy parameter; normalize MIME; no static 10 MB ceiling in the schema |
-| `index.ts` | Curate exports; no internal aliases/helpers |
+| File                      | Correction                                                                                                                                                     |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `constants/roles.ts`      | Collapse to `admin\|manager\|employee`; add `canAssignRole`, `resolveReadScope`; split `employee:read:self/team/all`; keep Stage 2 matrix in the doc, not code |
+| `constants/attendance.ts` | Drop `ATTENDANCE_POLICY_DEFAULTS`; add `WORKING_WEEKDAYS`; add `kolkataMinutesOfDay`/day-boundary helpers to `lib/attendance.ts`                               |
+| `constants/leave.ts`      | Keep donor types/statuses/defaults (12/10/15/0); remove ledger entry types from Stage 1 exports                                                                |
+| `types/employee.ts`       | `department: string` (not `departmentId`); `managerId`; `profile.avatarFileId`; role 3-value; keep `organizationId`; remove `system_admin` buckets             |
+| `types/leave.ts`          | Replace ledger with `LeaveBalanceBucket { label,total,used,remaining }`; move `countLeaveDays` to `lib/leave.ts`; fix weekend half-day                         |
+| `types/file.ts`           | Remove `StorageCapabilities`, `FileUploadResult.file`, exported `FileMetadata`; keep `FileResource` only                                                       |
+| `types/dashboard.ts`      | Defer; replace with donor-aligned payloads when the pages are ported                                                                                           |
+| `schemas/common.ts`       | Password max 72 bytes; strict boolean; email trim/lowercase                                                                                                    |
+| `schemas/employee.ts`     | **C1 fix**; strict; department string; no org field; role ceiling; no admin role in create                                                                     |
+| `schemas/leave.ts`        | Half-day single date; day count; remove ledger adjustment; keep review                                                                                         |
+| `schemas/file.ts`         | Accept policy parameter; normalize MIME; no static 10 MB ceiling in the schema                                                                                 |
+| `index.ts`                | Curate exports; no internal aliases/helpers                                                                                                                    |
 
 ### 5.3 Defer to Stage 2
 
-| File | Reason |
-| --- | --- |
-| `types/organization.ts` | Org settings/policy are Stage 2 |
-| `types/leave.ts` ledger entries | Counters in Stage 1 |
-| `types/file.ts` `StorageCapabilities` | No provider abstraction in Stage 1 |
-| `schemas/attendance.ts` policy/month extras | Minimal in Stage 1 |
-| `types/dashboard.ts` enterprise aggregates | Align to donor payloads later |
-| `schemas/employee.ts` `updateEmployeeStatusSchema` extras | Keep minimal status endpoint |
+| File                                                      | Reason                             |
+| --------------------------------------------------------- | ---------------------------------- |
+| `types/organization.ts`                                   | Org settings/policy are Stage 2    |
+| `types/leave.ts` ledger entries                           | Counters in Stage 1                |
+| `types/file.ts` `StorageCapabilities`                     | No provider abstraction in Stage 1 |
+| `schemas/attendance.ts` policy/month extras               | Minimal in Stage 1                 |
+| `types/dashboard.ts` enterprise aggregates                | Align to donor payloads later      |
+| `schemas/employee.ts` `updateEmployeeStatusSchema` extras | Keep minimal status endpoint       |
 
 ### 5.4 Drop
 
-| File/Symbol | Reason |
-| --- | --- |
-| Five-role `ROLE_PERMISSIONS` matrix | Wrong for Stage 1 |
-| `ATTENDANCE_POLICY_DEFAULTS` | Not used; wrong shape; Stage 2 replaces |
-| `StorageCapabilities` | No provider abstraction |
-| `LeaveLedgerEntry*` exports | No ledger |
+| File/Symbol                              | Reason                                                 |
+| ---------------------------------------- | ------------------------------------------------------ |
+| Five-role `ROLE_PERMISSIONS` matrix      | Wrong for Stage 1                                      |
+| `ATTENDANCE_POLICY_DEFAULTS`             | Not used; wrong shape; Stage 2 replaces                |
+| `StorageCapabilities`                    | No provider abstraction                                |
+| `LeaveLedgerEntry*` exports              | No ledger                                              |
 | `Organization`/`Department` domain types | No org model in Stage 1 (only `organizationId` scalar) |
 
 ### 5.5 Shared package gates
@@ -685,37 +685,37 @@ Tests to add: permission matrix snapshot, role ceiling, C1 regression, `countLea
 
 ### 6.1 Essential (Stage 1, blocking)
 
-| ID | Risk | Donor evidence | Fix | Test |
-| --- | --- | --- | --- | --- |
-| **S1** | Dual auth realms + platform token accepted by employee admin | `employeeAuth.resolveAdminIdentity` accepts `{role:"admin"}`, `{userId}`, `{entity:"admin"}` | One realm; single Employee identity; delete `Admin` model | token from another realm rejected |
-| **S2** | Broken `GET /auth/me` | mounted behind `authenticateAdmin`; employee branch unreachable | Unified `/auth/me` | employee + admin + manager return self |
-| **S3** | IDOR on admin employee routes | `findById(req.params.id)` with no scope | Admin-only guard + tenant filter; soft delete detaches reports | employee cannot call admin routes |
-| **S4** | IDOR on team routes | `team/member/:id`, `team/leave/:id/status` trust ids | Verify `manager === actor` or admin | manager A cannot read/review team B |
-| **S5** | IDOR on tasks | `GET /tasks/:id`, attachment URL, status patch | `canManageTask` everywhere + tenant | non-participant gets 403 |
-| **S6** | IDOR on queries | review by id | team/admin check + tenant | non-team reviewer gets 403 |
-| **S7** | IDOR on meetings | start/end by id | organizer check (fix `_id` handling) + tenant | participant cannot end |
-| **S8** | Anonymous file access | `/api/upload/*` has no middleware; signed URLs bypass auth | Auth + scope checks; GridFS; no presigned URLs | anonymous upload/download 401 |
-| **S9** | Upload abuse | no MIME/size enforcement | allowlist, size cap, filename sanitize, safe headers | `.exe`, 11 MB, `../` rejected |
-| **S10** | Role escalation | managers can create only employees in donor, but shared `assignableRoleSchema` includes org_admin | 3-role ceiling; self-role change forbidden | manager cannot create admin/manager |
-| **S11** | Mass assignment | donor validators whitelist, but shared PATCH leaks defaults (C1) | strict schemas + defaults-free PATCH | PATCH `{firstName}` changes only firstName |
-| **S12** | Password truncation | bcrypt 72-byte limit, schema allows 128 | cap at 72 bytes or pre-hash | 73-byte password rejected/documented |
-| **S13** | Leave balance race | read-check-write on approval | atomic `findOneAndUpdate` with condition | concurrent approvals cannot overdraw |
-| **S14** | Cross-tenant leak (Stage 2 prep) | no tenant filter | `organizationId` on every query | cross-org fixture invisible |
+| ID      | Risk                                                         | Donor evidence                                                                                    | Fix                                                            | Test                                       |
+| ------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------ |
+| **S1**  | Dual auth realms + platform token accepted by employee admin | `employeeAuth.resolveAdminIdentity` accepts `{role:"admin"}`, `{userId}`, `{entity:"admin"}`      | One realm; single Employee identity; delete `Admin` model      | token from another realm rejected          |
+| **S2**  | Broken `GET /auth/me`                                        | mounted behind `authenticateAdmin`; employee branch unreachable                                   | Unified `/auth/me`                                             | employee + admin + manager return self     |
+| **S3**  | IDOR on admin employee routes                                | `findById(req.params.id)` with no scope                                                           | Admin-only guard + tenant filter; soft delete detaches reports | employee cannot call admin routes          |
+| **S4**  | IDOR on team routes                                          | `team/member/:id`, `team/leave/:id/status` trust ids                                              | Verify `manager === actor` or admin                            | manager A cannot read/review team B        |
+| **S5**  | IDOR on tasks                                                | `GET /tasks/:id`, attachment URL, status patch                                                    | `canManageTask` everywhere + tenant                            | non-participant gets 403                   |
+| **S6**  | IDOR on queries                                              | review by id                                                                                      | team/admin check + tenant                                      | non-team reviewer gets 403                 |
+| **S7**  | IDOR on meetings                                             | start/end by id                                                                                   | organizer check (fix `_id` handling) + tenant                  | participant cannot end                     |
+| **S8**  | Anonymous file access                                        | `/api/upload/*` has no middleware; signed URLs bypass auth                                        | Auth + scope checks; GridFS; no presigned URLs                 | anonymous upload/download 401              |
+| **S9**  | Upload abuse                                                 | no MIME/size enforcement                                                                          | allowlist, size cap, filename sanitize, safe headers           | `.exe`, 11 MB, `../` rejected              |
+| **S10** | Role escalation                                              | managers can create only employees in donor, but shared `assignableRoleSchema` includes org_admin | 3-role ceiling; self-role change forbidden                     | manager cannot create admin/manager        |
+| **S11** | Mass assignment                                              | donor validators whitelist, but shared PATCH leaks defaults (C1)                                  | strict schemas + defaults-free PATCH                           | PATCH `{firstName}` changes only firstName |
+| **S12** | Password truncation                                          | bcrypt 72-byte limit, schema allows 128                                                           | cap at 72 bytes or pre-hash                                    | 73-byte password rejected/documented       |
+| **S13** | Leave balance race                                           | read-check-write on approval                                                                      | atomic `findOneAndUpdate` with condition                       | concurrent approvals cannot overdraw       |
+| **S14** | Cross-tenant leak (Stage 2 prep)                             | no tenant filter                                                                                  | `organizationId` on every query                                | cross-org fixture invisible                |
 
 ### 6.2 Essential correctness fixes
 
-| ID | Bug | Fix |
-| --- | --- | --- |
-| **B1** | `EmployeeQuery.find({ "employee.manager": managerId })` never matches | Resolve team ids, then `employee: { $in: teamIds }` |
-| **B2** | `countLeaveDays` returns 0.5 for any multi-day half-day | 0.5 only for a single working date; reject multi-date half-days |
-| **B3** | `generateMeetUrl()` fabricates Google Meet URLs | Remove; accept optional user-supplied `meetingLink` |
-| **B4** | Cancel does not restore an approved balance | Allow cancelling approved future leave; decrement `used` atomically |
-| **B5** | Half-day on weekend counted as 0.5 | Return 0 on non-working days |
-| **B6** | `GET /team/attendance` inherited manager auth twice (`router.use` + per-route) | Single guard per route |
-| **B7** | `Attendance.markedBy` refs `EmployeeAdmin` | Ref `Employee` |
-| **B8** | `Counter` key is global | Key includes `organizationId` |
-| **B9** | Meeting organizer `_id` access on unpopulated doc | Normalize id comparison |
-| **B10** | Frontend duplicate attendance constants | Single shared implementation |
+| ID      | Bug                                                                            | Fix                                                                 |
+| ------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| **B1**  | `EmployeeQuery.find({ "employee.manager": managerId })` never matches          | Resolve team ids, then `employee: { $in: teamIds }`                 |
+| **B2**  | `countLeaveDays` returns 0.5 for any multi-day half-day                        | 0.5 only for a single working date; reject multi-date half-days     |
+| **B3**  | `generateMeetUrl()` fabricates Google Meet URLs                                | Remove; accept optional user-supplied `meetingLink`                 |
+| **B4**  | Cancel does not restore an approved balance                                    | Allow cancelling approved future leave; decrement `used` atomically |
+| **B5**  | Half-day on weekend counted as 0.5                                             | Return 0 on non-working days                                        |
+| **B6**  | `GET /team/attendance` inherited manager auth twice (`router.use` + per-route) | Single guard per route                                              |
+| **B7**  | `Attendance.markedBy` refs `EmployeeAdmin`                                     | Ref `Employee`                                                      |
+| **B8**  | `Counter` key is global                                                        | Key includes `organizationId`                                       |
+| **B9**  | Meeting organizer `_id` access on unpopulated doc                              | Normalize id comparison                                             |
+| **B10** | Frontend duplicate attendance constants                                        | Single shared implementation                                        |
 
 ### 6.3 Optional (not required for initial commit)
 
@@ -738,6 +738,7 @@ Every phase ends with the same gates unless noted: `npm run build`, `npm run typ
 **Depends on:** nothing.
 
 **Tasks**
+
 - Fix root `eslint.config.mjs`: `apps/frontend/**` → `frontend/**`, `apps/backend/**` → `backend/**`; add JS backend globals; ignore `dist`.
 - Add backend `test` script (`node --test test/`), shared `test` script, frontend `test` placeholder only if a runner is added (otherwise omit).
 - Extend `backend/.env.example`: `JWT_SECRET`, `JWT_EXPIRES_IN`, `ORGANIZATION_ID`, `ADMIN_*`, `MAX_UPLOAD_MB`, `HRMS_TZ`.
@@ -757,6 +758,7 @@ Every phase ends with the same gates unless noted: `npm run build`, `npm run typ
 **Source → target:** `packages/shared/src/**` (all Phase 1 files; see §5).
 
 **Tasks**
+
 - Apply C1, H1, H2, H4, H5, M1, M5, M8, M10, M17.
 - Collapse to 3 roles; add `canAssignRole`, `resolveReadScope`, `API_ERROR_CODES`.
 - Remove org/ledger/provider contracts from exports.
@@ -777,6 +779,7 @@ Every phase ends with the same gates unless noted: `npm run build`, `npm run typ
 **Source → target:** `config/env.js`, `errors/ApiError.js`, `middleware/*`, `models/employee/*` (except Admin), `shared/*`, `seeds/seed.js`.
 
 **Tasks**
+
 - Envelope/error middleware, `ApiError`, `respond` helpers.
 - `authenticate` + `authorize(permission)` skeleton.
 - Model port with `organizationId`, role enum, indexes, `select: false` passwords, avatar file id.
@@ -798,6 +801,7 @@ Every phase ends with the same gates unless noted: `npm run build`, `npm run typ
 **Source → target:** `authController.js`, `auth.service.js`, `employeeAuth.js`, `employee.validator.js` (password parts).
 
 **Tasks**
+
 - Unified `POST /auth/login`, `GET /auth/me`, `PUT /auth/change-password`.
 - Remove `/auth/admin-login` and the `Admin` model.
 - Token payload, inactive rejection, safe sanitization.
@@ -818,6 +822,7 @@ Every phase ends with the same gates unless noted: `npm run build`, `npm run typ
 **Source → target:** `uploadController.js` + `uploadRoutes.js` → `modules/files/*`; `s3.service.js` dropped.
 
 **Tasks**
+
 - Add `multer`; memory storage; limits.
 - GridFS bucket service; metadata model; checksum.
 - Upload/download/delete routes + access rules.
@@ -837,6 +842,7 @@ Every phase ends with the same gates unless noted: `npm run build`, `npm run typ
 **Source → target:** `adminController.js`, `profileController.js`, `Employee.js`, `employee.validator.js`; frontend `AdminEmployees` contract.
 
 **Tasks**
+
 - `GET/POST /admin/employees`, `GET/PUT/DELETE /admin/employees/:id`, `PATCH .../status`, `GET /admin/stats`, `GET /admin/managers`.
 - Team: `GET /team`, `POST /team`, `GET /team/available`, `POST/DELETE /team/assign`.
 - Profile: `GET/PUT /me` with avatar file id.
@@ -858,6 +864,7 @@ Every phase ends with the same gates unless noted: `npm run build`, `npm run typ
 **Source → target:** attendance controller/service/model/constants/validator.
 
 **Tasks**
+
 - Port check-in/out, breaks, sessions, overtime, half-day/absent, auto break end.
 - Self endpoints + team endpoints + month/summary.
 - Single shared policy/math implementation; frontend imports it.
@@ -877,6 +884,7 @@ Every phase ends with the same gates unless noted: `npm run build`, `npm run typ
 **Source → target:** leave controller/service/validator/model.
 
 **Tasks**
+
 - Balance, submit, draft, update draft, cancel, history, pending, review.
 - Counter side effects; atomic approval; cancel-approved restore.
 - Half-day rules; weekend exclusion; pending-balance calculation.
@@ -896,6 +904,7 @@ Every phase ends with the same gates unless noted: `npm run build`, `npm run typ
 **Source → target:** task controller/service/model.
 
 **Tasks**
+
 - Assign, list, get, status update, team list, team summary.
 - Human task ids via org-scoped counter.
 - Attachments as file ids; download via `/files/:id`; remove signed-URL route.
@@ -915,6 +924,7 @@ Every phase ends with the same gates unless noted: `npm run build`, `npm run typ
 **Source → target:** query controller/service/model; activity service/model.
 
 **Tasks**
+
 - Raise/list/mine/team/review/stats.
 - Fix team filter (B1) with team-id lookup.
 - Status transitions (open/in_review/resolved/raised_again).
@@ -934,6 +944,7 @@ Every phase ends with the same gates unless noted: `npm run build`, `npm run typ
 **Source → target:** meeting controller/model; calendar service.
 
 **Tasks**
+
 - List, active, create, start, end.
 - User-supplied link only; validate `http(s)`; no generator.
 - Availability, active meeting blocking, auto-end, participant scoping.
@@ -954,6 +965,7 @@ Every phase ends with the same gates unless noted: `npm run build`, `npm run typ
 **Source → target:** dashboard controller/service; team report builder.
 
 **Tasks**
+
 - `GET /dashboard`, `GET /managers-dashboard`, `GET /team`, `GET /team/member/:id`, `GET /team/reports`.
 - Preserve donor payload shapes (attendance, summary, task summary, pending leaves, alerts, activity).
 - Monthly report classification (present/late/absent/leave), attendance rate.
@@ -973,6 +985,7 @@ Every phase ends with the same gates unless noted: `npm run build`, `npm run typ
 **Source → target:** `lib/api.ts`, auth context/guard, layouts, employee pages/components.
 
 **Tasks**
+
 - Vite/RRD 7/Tailwind 4 setup; providers; route table; 404.
 - Login page (email/password, role redirect, error states).
 - API client with envelope unwrap + 401 handling.
@@ -995,6 +1008,7 @@ Every phase ends with the same gates unless noted: `npm run build`, `npm run typ
 **Source → target:** manager pages/components.
 
 **Tasks**
+
 - Dashboard (attendance, activity, alerts, pending leave, team table).
 - Tasks (assign, team list, summary), leave review, queries/review, team directory/detail, reports, profile, settings.
 - Meeting dialog reuse.
@@ -1013,6 +1027,7 @@ Every phase ends with the same gates unless noted: `npm run build`, `npm run typ
 **Source → target:** `AdminEmployees.tsx` → `pages/admin/EmployeesPage.tsx`; new admin layout/overview.
 
 **Tasks**
+
 - Admin login (same `/login`), role landing.
 - Overview: staff stats, department/role/status breakdown, quick links.
 - Employees: list, filters, create, edit, deactivate/reactivate, role ceiling, manager assignment.
@@ -1031,6 +1046,7 @@ Every phase ends with the same gates unless noted: `npm run build`, `npm run typ
 **Depends on:** A12–A14.
 
 **Tasks**
+
 - Full API integration test run; seed + smoke with real Mongo.
 - Security checklist: IDOR matrix, file access, role ceiling, no anonymous endpoints, no secrets.
 - Fix flaky React 19 StrictMode effects; verify double-fetch safety.
@@ -1132,24 +1148,24 @@ Each wave is independently shippable and keeps Stage 1 endpoints working through
 
 ## 9. Four-person workstreams
 
-| Workstream | Owner profile | Stage 1 phases | Stage 2 waves |
-| --- | --- | --- | --- |
-| **A — Platform backend** | Backend/auth/security | A0, A1, A2, A3, A4, A5 | 1, 2, 3, 6 |
-| **B — Domain backend** | Backend/domain logic | A6, A7, A8, A9, A10, A11 | 4, 5, 7 |
-| **C — Employee frontend** | React/UI | A12 (employee + shared UI) | 2, 4, 7 (UI) |
-| **D — Manager/admin frontend** | React/UI | A13, A14 | 2, 4, 7 (admin UI) |
+| Workstream                     | Owner profile         | Stage 1 phases             | Stage 2 waves      |
+| ------------------------------ | --------------------- | -------------------------- | ------------------ |
+| **A — Platform backend**       | Backend/auth/security | A0, A1, A2, A3, A4, A5     | 1, 2, 3, 6         |
+| **B — Domain backend**         | Backend/domain logic  | A6, A7, A8, A9, A10, A11   | 4, 5, 7            |
+| **C — Employee frontend**      | React/UI              | A12 (employee + shared UI) | 2, 4, 7 (UI)       |
+| **D — Manager/admin frontend** | React/UI              | A13, A14                   | 2, 4, 7 (admin UI) |
 
 ### Integration dependencies
 
-| Dependency | Producer | Consumer | Contract |
-| --- | --- | --- | --- |
-| Shared package (`A1`) | A | All | Build + tests green before A2/A12 |
-| API envelope + auth | A | B, C, D | Frozen after A3 |
-| Employee DTOs | A | C, D | Frozen after A5 |
-| Attendance/leave/task/query contracts | B | C, D | Per-phase contract note |
-| File endpoints | A | B, C, D | Frozen after A4 |
-| Dashboard payloads | B | C, D | Snapshot tests |
-| UI primitives/layouts | C | D | Available by end of A12 day 2 |
+| Dependency                            | Producer | Consumer | Contract                          |
+| ------------------------------------- | -------- | -------- | --------------------------------- |
+| Shared package (`A1`)                 | A        | All      | Build + tests green before A2/A12 |
+| API envelope + auth                   | A        | B, C, D  | Frozen after A3                   |
+| Employee DTOs                         | A        | C, D     | Frozen after A5                   |
+| Attendance/leave/task/query contracts | B        | C, D     | Per-phase contract note           |
+| File endpoints                        | A        | B, C, D  | Frozen after A4                   |
+| Dashboard payloads                    | B        | C, D     | Snapshot tests                    |
+| UI primitives/layouts                 | C        | D        | Available by end of A12 day 2     |
 
 ### Working agreements
 
@@ -1262,18 +1278,18 @@ Week 4: A15 integration/security; buffer
 
 ## 12. Risks and mitigations
 
-| Risk | Impact | Mitigation |
-| --- | --- | --- |
-| Express 5 async/error semantics | Unhandled rejections | Wrap controllers; error middleware; API tests |
-| Mongoose 9 aggregation/middleware changes | Attendance/report regressions | Port tests first; fixture parity |
-| GridFS + multer mismatch | Upload failures | Small spike in A4; memory storage; stream tests |
-| React 19 StrictMode double effects | Duplicate attendance actions | Idempotent actions + abort/ignore guards |
-| Tailwind 4 class changes | Visual regressions | Standard utilities only; visual smoke |
-| RRD 7 route changes | Broken navigation | Explicit route table + guard tests |
-| Donor dead code mistaken for features | Wasted effort | Inventory §2.8; verify imports before porting |
-| Scope creep into Stage 2 | Delayed commit | Non-goals §0.2; D1 seam only |
-| Leave balance race | Incorrect balances | Atomic update + test |
-| Tenant seam rejected | Stage 2 rewrite | Decision D1 at approval |
+| Risk                                      | Impact                        | Mitigation                                      |
+| ----------------------------------------- | ----------------------------- | ----------------------------------------------- |
+| Express 5 async/error semantics           | Unhandled rejections          | Wrap controllers; error middleware; API tests   |
+| Mongoose 9 aggregation/middleware changes | Attendance/report regressions | Port tests first; fixture parity                |
+| GridFS + multer mismatch                  | Upload failures               | Small spike in A4; memory storage; stream tests |
+| React 19 StrictMode double effects        | Duplicate attendance actions  | Idempotent actions + abort/ignore guards        |
+| Tailwind 4 class changes                  | Visual regressions            | Standard utilities only; visual smoke           |
+| RRD 7 route changes                       | Broken navigation             | Explicit route table + guard tests              |
+| Donor dead code mistaken for features     | Wasted effort                 | Inventory §2.8; verify imports before porting   |
+| Scope creep into Stage 2                  | Delayed commit                | Non-goals §0.2; D1 seam only                    |
+| Leave balance race                        | Incorrect balances            | Atomic update + test                            |
+| Tenant seam rejected                      | Stage 2 rewrite               | Decision D1 at approval                         |
 
 ---
 

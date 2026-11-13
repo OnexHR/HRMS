@@ -21,6 +21,7 @@
     "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src --config ../../eslint.config.mjs",
+    "pretest": "npm run build",
     "test": "node --test"
   },
   "dependencies": {

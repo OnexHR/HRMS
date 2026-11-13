@@ -1,37 +1,59 @@
-import { z } from "zod";
+import { z } from 'zod'
 
+import { FILE_SCOPES, MAX_FILENAME_LENGTH, MAX_MIME_TYPE_LENGTH } from '../constants/file.js'
 import {
-  DEFAULT_ALLOWED_MIME_TYPES,
-  DEFAULT_MAX_UPLOAD_SIZE_MB,
-  MAX_FILENAME_LENGTH,
-  MAX_MIME_TYPE_LENGTH,
-} from "../constants/file.js";
+  isAllowedMimeType,
+  isFilenameConsistentWithMime,
+  normalizeFilename,
+  normalizeMimeType,
+} from '../lib/normalize.js'
+import type { FileUploadPolicy } from '../types/file.js'
+import { objectIdSchema } from './common.js'
 
 /**
- * Decision 8 (locked): no signed-URL field exists anywhere. Upload metadata is
- * validated here; the bytes travel through the authenticated upload endpoint.
+ * Builds the upload metadata schema for a resolved policy (M5).
+ *
+ * The policy is a parameter rather than a module constant: Stage 1 resolves the
+ * size limit and allowlist from the environment, and Stage 2 will resolve them
+ * per organization. The schema normalizes the MIME type before checking it and
+ * enforces both the allowlist and the policy's byte limit.
  */
-export const fileUploadMetadataSchema = z.object({
-  filename: z.string().trim().min(1).max(MAX_FILENAME_LENGTH),
-  mimeType: z.string().trim().min(3).max(MAX_MIME_TYPE_LENGTH),
-  size: z
-    .number()
-    .int()
-    .positive()
-    .max(DEFAULT_MAX_UPLOAD_SIZE_MB * 1024 * 1024),
-});
+export function createFileUploadMetadataSchema(policy: FileUploadPolicy) {
+  return z
+    .object({
+      filename: z
+        .string()
+        .trim()
+        .min(1)
+        .transform(normalizeFilename)
+        .pipe(z.string().min(1).max(MAX_FILENAME_LENGTH)),
+      mimeType: z
+        .string()
+        .trim()
+        .min(3)
+        .max(MAX_MIME_TYPE_LENGTH)
+        .transform(normalizeMimeType)
+        .refine(
+          (value) => isAllowedMimeType(value, policy.allowedMimeTypes),
+          'Unsupported file type',
+        ),
+      size: z
+        .number()
+        .int()
+        .positive()
+        .max(policy.maxSizeBytes, `File must be at most ${policy.maxSizeBytes} bytes`),
+      scope: z.enum(FILE_SCOPES).default('general'),
+      refId: objectIdSchema.nullish(),
+    })
+    .superRefine((value, ctx) => {
+      if (!isFilenameConsistentWithMime(value.filename, value.mimeType)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Filename extension does not match the file type',
+          path: ['filename'],
+        })
+      }
+    })
+}
 
-export const filePolicySchema = z.object({
-  maxUploadSizeMb: z.number().int().min(1).max(100),
-  allowedMimeTypes: z
-    .array(z.string().trim().min(3).max(MAX_MIME_TYPE_LENGTH))
-    .min(1),
-});
-
-export const allowedMimeTypeListSchema = z
-  .array(z.string().trim().min(3).max(MAX_MIME_TYPE_LENGTH))
-  .min(1)
-  .default([...DEFAULT_ALLOWED_MIME_TYPES]);
-
-export type FileUploadMetadataInput = z.infer<typeof fileUploadMetadataSchema>;
-export type FilePolicyInput = z.infer<typeof filePolicySchema>;
+export type FileUploadMetadataInput = z.infer<ReturnType<typeof createFileUploadMetadataSchema>>
