@@ -362,7 +362,7 @@ const AllTasksTable: React.FC<{ tasks?: Task[]; loading?: boolean }> = ({ tasks 
               </div>
               <div className="rounded-xl bg-gray-50 p-3">
                 <p className="text-gray-500">Assignee</p>
-                <p className="mt-1 font-semibold text-[#10284A]">{typeof selectedTask.assignedTo === "object" ? `${selectedTask.assignedTo.firstName ?? ""} ${selectedTask.assignedTo.lastName ?? ""}`.trim() || "Unassigned" : "Unassigned"}</p>
+                <p className="mt-1 font-semibold text-[#10284A]">{selectedTask.assignedTo && typeof selectedTask.assignedTo === "object" ? `${selectedTask.assignedTo.firstName ?? ""} ${selectedTask.assignedTo.lastName ?? ""}`.trim() || "Unassigned" : "Unassigned"}</p>
               </div>
               <div className="rounded-xl bg-gray-50 p-3">
                 <p className="text-gray-500">Status</p>

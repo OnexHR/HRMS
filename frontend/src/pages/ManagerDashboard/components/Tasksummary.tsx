@@ -11,7 +11,7 @@ const TaskSummary: React.FC<{ summary?: TaskSummaryType | null; loading?: boolea
   const stats = [
     {
       label: "Total Tasks",
-      value: summary?.total ?? 0,
+      value: typeof summary?.total === "number" ? summary.total : 0,
       icon: ClipboardList,
       bg: "bg-blue-50",
       iconColor: "text-[#2459A6]",
@@ -19,7 +19,7 @@ const TaskSummary: React.FC<{ summary?: TaskSummaryType | null; loading?: boolea
     },
     {
       label: "Completed",
-      value: summary?.completed ?? 0,
+      value: typeof summary?.completed === "number" ? summary.completed : 0,
       icon: CheckCircle2,
       bg: "bg-green-50",
       iconColor: "text-green-600",
@@ -27,7 +27,7 @@ const TaskSummary: React.FC<{ summary?: TaskSummaryType | null; loading?: boolea
     },
     {
       label: "In Progress",
-      value: summary?.inProgress ?? 0,
+      value: typeof summary?.inProgress === "number" ? summary.inProgress : 0,
       icon: Clock3,
       bg: "bg-amber-50",
       iconColor: "text-amber-500",
@@ -35,7 +35,7 @@ const TaskSummary: React.FC<{ summary?: TaskSummaryType | null; loading?: boolea
     },
     {
       label: "Overdue",
-      value: summary?.overdue ?? 0,
+      value: typeof summary?.overdue === "number" ? summary.overdue : 0,
       icon: AlertTriangle,
       bg: "bg-rose-50",
       iconColor: "text-rose-500",

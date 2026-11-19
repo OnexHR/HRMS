@@ -155,7 +155,7 @@ import {
   PasswordInputField,
   PasswordRequirementsChecklist,
   UpdatePasswordButton,
-} from "../../StudentDashboard/components/PasswordSettingsControls";
+} from "../../../components/PasswordSettingsControls";
 import { useChangePassword } from "../../../hooks/useChangePassword";
 
 const PASSWORD_REGEX =

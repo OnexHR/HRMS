@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
 import { Home, UserPlus, Users, Calendar, FilePlus, LogOut, X, BookOpen, Menu, Briefcase, UserCog } from 'lucide-react'
 // Eye, Menu, Trash2, Edit3, TrendingUp, User, removed from lucide icons
-import { useAuth } from '../../contexts/AuthContext'
+// import { useAuth } from '../../contexts/AuthContext'
 import AdminSessions from './AdminSessions'
 import AdminReviews from './AdminReviews'
 
@@ -12,7 +12,7 @@ import AdminReviews from './AdminReviews'
 import AdminCourses from './AdminCourses'
 import AdminTrainers from './AdminTrainers'
 import AdminUsers from './AdminUsers'
-import AdminHome from '../AdminHome'
+// import AdminHome from '../AdminHome'
 import AdminStudents from './AdminStudents'
 import AdminCareers from './AdminCareers'
 import AdminHeroTutors from './AdminHeroTutors'
@@ -55,7 +55,6 @@ import AdminEmployees from './AdminEmployees'
 
 /* -------------------------- Admin Dashboard Root -------------------------- */
 const AdminDashboard: React.FC = () => {
-  const { logout } = useAuth() as any
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const navigation = [
@@ -74,7 +73,8 @@ const AdminDashboard: React.FC = () => {
   const navigate = useNavigate()
 
   const handleLogout = () => {
-    logout()
+    sessionStorage.removeItem('hrms.demo.accessToken')
+    sessionStorage.removeItem('hrms.demo.user')
     // Sign-in is a global modal, not a page — there is no /login route, so
     // navigating there landed on the NotFound page.
     navigate('/')
@@ -134,7 +134,7 @@ const AdminDashboard: React.FC = () => {
 
         <div className="flex-1 p-4 sm:p-6 overflow-auto">
           <Routes>
-            <Route path="/" element={<AdminHome />} />
+            <Route path="/" element={<h1 className="text-2xl font-semibold">Admin Dashboard</h1>} />
             <Route path="/users" element={<AdminUsers />} />
             <Route path="/employees" element={<AdminEmployees />} />
             <Route path="/trainers" element={<AdminTrainers />} />

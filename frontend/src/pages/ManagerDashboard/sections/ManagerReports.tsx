@@ -213,7 +213,7 @@ const ReportModal: React.FC<{
                       cell.info?.status === "leave"
                         ? `Leave (${cell.info.leaveType ?? "full day"})`
                         : cell.info?.status === "late" || cell.info?.status === "present"
-                          ? `${cell.info.status[0].toUpperCase()}${cell.info.status.slice(1)}${cell.info.workingMinutes ? ` · ${formatDuration(cell.info.workingMinutes)}` : ""}`
+                          ? `${String(cell.info.status)[0].toUpperCase()}${String(cell.info.status).slice(1)}${typeof cell.info.workingMinutes === "number" ? ` · ${formatDuration(cell.info.workingMinutes)}` : ""}`
                           : "Absent"
                     }
                     className={`flex aspect-square items-center justify-center rounded-xl text-xs font-semibold tabular-nums shadow-sm ring-1 ring-black/5 transition-transform duration-150 hover:scale-110 ${STATUS_STYLES[cell.status] ?? "text-gray-300"}`}
@@ -459,7 +459,7 @@ const ManagerReports: React.FC = () => {
                         rate >= 80 ? "bg-emerald-500" : rate >= 60 ? "bg-amber-500" : "bg-rose-500";
 
                       return (
-                        <tr key={member._id} className="text-sm transition-colors hover:bg-slate-50/70">
+                        <tr key={typeof member._id === "string" ? member._id : report.date} className="text-sm transition-colors hover:bg-slate-50/70">
                           <td className="py-3.5 pl-6 pr-4">
                             <div className="flex items-center gap-3">
                               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-blue-50 text-xs font-bold text-[#2459A6] ring-1 ring-blue-100">

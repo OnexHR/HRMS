@@ -1,5 +1,5 @@
-import { HeroTutor } from "../../../hooks/useFetchHeroTutors";
-import userAvatar from "../../../assets/user_avatar.png";
+import type { HeroTutor } from "../../../hooks/useFetchHeroTutors";
+import userAvatar from "../../../assets/OnexHRLogo.png";
 
 type Props = {
   tutors: HeroTutor[];

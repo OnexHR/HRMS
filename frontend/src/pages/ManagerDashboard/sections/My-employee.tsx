@@ -250,7 +250,7 @@ const EmployeeTable: React.FC = () => {
                                 )}
                               </div>
                               <p className="truncate text-xs text-gray-500">
-                                {emp.employeeCode ?? '-'}
+                                {typeof emp.employeeCode === "string" ? emp.employeeCode : '-'}
                                 {emp.designation ? ` · ${emp.designation}` : emp.department ? ` · ${emp.department}` : ''}
                               </p>
                             </div>
