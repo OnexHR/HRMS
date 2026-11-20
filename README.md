@@ -59,6 +59,9 @@ copy backend\.env.example backend\.env
 
 Set `MONGODB_URI`, `CORS_ORIGIN`, and other values in `backend/.env`.
 Never commit `.env` files; only `.env.example` files are tracked.
+For local demo sign-in, set the `DEMO_*` identifiers and passwords in
+`backend/.env`. Demo authentication is disabled in production, and credentials
+are not included in the frontend or displayed in the sign-in screen.
 
 The frontend reads `VITE_API_URL` when it is added to
 `frontend/.env` (for example `http://localhost:4000/api/v1`).
