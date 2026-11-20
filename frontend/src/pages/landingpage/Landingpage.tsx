@@ -1,10 +1,33 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import bgImage from "../../assets/landingpagebg.webp";
 import logo from "../../assets/OnexHRLogo.png";
 import Footer from "../../components/Footer";
-import LandingpageModal from "./LandingpageModal";
+import OrganizationRegistration from "../Organization Registration module/OrganizationRegistration";
 import "./Landingpage.css";
+
+const apiBase =
+  (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ??
+  "http://localhost:4000/api/v1";
+
+type DemoRole = "admin" | "manager" | "employee";
+type LoginResponse = {
+  data?: {
+    accessToken?: string;
+    user?: { id?: string; role?: unknown };
+  };
+  error?: { message?: string };
+};
+const roleRoutes: Record<DemoRole, string> = {
+  admin: "/admin",
+  manager: "/manager",
+  employee: "/employee",
+};
+
+function isDemoRole(role: unknown): role is DemoRole {
+  return typeof role === "string" && Object.hasOwn(roleRoutes, role);
+}
 
 /* ---------- tiny inline icons (no extra library needed) ---------- */
 type IconProps = { size?: number };
@@ -88,17 +111,46 @@ const Wave = ({ id, className, from, to, y, amp }: WaveProps) => (
 
 /* ---------- page ---------- */
 export default function Landingpage() {
+  const navigate = useNavigate();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
   const [registerOpen, setRegisterOpen] = useState(false);
+  const [signInError, setSignInError] = useState("");
+  const [signingIn, setSigningIn] = useState(false);
 
-  const handleSignIn = (e: FormEvent<HTMLFormElement>) => {
+  const handleSignIn = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: call your login API here, e.g.
-    // await api.post("/auth/login", { identifier, password, remember });
-    console.log("Sign in", { identifier, remember });
+    setSignInError("");
+    setSigningIn(true);
+
+    try {
+      const response = await fetch(`${apiBase}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier, password }),
+      });
+      const result = await response.json() as LoginResponse;
+      if (!response.ok) {
+        throw new Error(result.error?.message ?? "Unable to sign in.");
+      }
+
+      const user = result.data?.user;
+      const accessToken = result.data?.accessToken;
+      if (!user?.id || !isDemoRole(user.role) || !accessToken) {
+        throw new Error("The sign-in response is invalid.");
+      }
+
+      sessionStorage.setItem("hrms.demo.accessToken", accessToken);
+      sessionStorage.setItem("hrms.demo.user", JSON.stringify(user));
+      setPassword("");
+      navigate(roleRoutes[user.role]);
+    } catch (error) {
+      setSignInError(error instanceof Error ? error.message : "Unable to sign in.");
+    } finally {
+      setSigningIn(false);
+    }
   };
 
   return (
@@ -204,8 +256,10 @@ export default function Landingpage() {
               <a href="#" className="lp-link">Forgot Password?</a>
             </div>
 
-            <button type="submit" className="lp-signin">
-              <SignInIcon /> Sign In
+            {signInError && <p className="lp-signin-error" role="alert">{signInError}</p>}
+
+            <button type="submit" className="lp-signin" disabled={signingIn}>
+              <SignInIcon /> {signingIn ? "Signing In..." : "Sign In"}
             </button>
           </form>
 
@@ -230,7 +284,7 @@ export default function Landingpage() {
 
       <Footer />
 
-      <LandingpageModal open={registerOpen} onClose={() => setRegisterOpen(false)} />
+      <OrganizationRegistration open={registerOpen} onClose={() => setRegisterOpen(false)} />
     </div>
   );
 }

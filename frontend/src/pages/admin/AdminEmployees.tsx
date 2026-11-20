@@ -259,7 +259,7 @@ const AdminEmployees: React.FC = () => {
         lastName: e.lastName ?? "",
         email: e.email ?? "",
         password: "",
-        role: e.role,
+        role: e.role ?? "employee",
         phone: e.phone ?? "",
         department: e.department ?? "",
         designation: e.designation ?? "",

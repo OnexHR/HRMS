@@ -157,7 +157,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useEmployeeAuth } from "../../../contexts/EmployeeAuthContext";
-import logo from "../../../assets/logo2.png";
+import logo from "../../../assets/OnexHRLogo.png";
 
 
 type SidebarProps = {

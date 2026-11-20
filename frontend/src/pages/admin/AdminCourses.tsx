@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { Trash2, Plus, Edit, X } from "lucide-react";
-import { Course, CourseLesson, CoursePayload } from "../../types/Course";
+import type { Course, CourseLesson, CoursePayload } from "../../types/Course";
 import { useCreateCourse } from "../../hooks/useCreateCourse";
 import { useUpdateCourse } from "../../hooks/useUpdateCourse";
 import { useCourses } from "../../hooks/useCourses";
@@ -107,7 +107,7 @@ const AdminCourses: React.FC = () => {
     return courses.map((course) => (
       <tr key={course._id} className="border-b hover:bg-gray-50">
         <td className="px-4 py-3">
-          <ThumbnailCell thumbnailKey={course.thumbnail} />
+          <ThumbnailCell thumbnailKey={course.thumbnail ?? ""} />
         </td>
         <td className="px-4 py-3 font-medium">{course.title}</td>
         <td className="px-4 py-3 text-center">
@@ -260,7 +260,7 @@ const AdminCourses: React.FC = () => {
         ? [...course.description]
         : [""],
     );
-    setOverview(course.overview);
+    setOverview(course.overview ?? "");
     setThumbnailFile(null);
     setPricing({
       inHouse: {

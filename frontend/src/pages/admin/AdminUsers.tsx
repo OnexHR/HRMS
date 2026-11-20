@@ -1,4 +1,5 @@
-import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
+import React, { useState, useEffect } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import axios from "axios";
 import { Trash2, Edit3 } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -64,7 +65,7 @@ const AdminUsers: React.FC = () => {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [resumeUploading, setResumeUploading] = useState(false);
   const [originalCerts, setOriginalCerts] = useState<Certification[]>([]);
-  const [removedCertKeys, setRemovedCertKeys] = useState<string[]>([]);
+  const [, setRemovedCertKeys] = useState<string[]>([]);
   const [certPreviews, setCertPreviews] = useState<Record<number, string>>({});
   const [searchQuery, setSearchQuery] = useState("");
 

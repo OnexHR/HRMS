@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Trainer } from "../../../hooks/useTrainers";
+import type { Trainer } from "../../../hooks/useTrainers";
 
 type Props = {
   trainers: Trainer[];

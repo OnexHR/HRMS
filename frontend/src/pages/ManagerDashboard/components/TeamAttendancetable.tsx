@@ -165,7 +165,7 @@ const TeamAttendanceTable: React.FC = () => {
                   <td className="py-3 pr-4">
                     <div className="flex items-center gap-3">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xs font-semibold text-[#2459A6]">
-                        {initialsOf(emp.name)}
+                        {initialsOf(emp.name ?? "")}
                       </div>
                       <span className="font-medium text-[#10284A]">{emp.name}</span>
                     </div>
