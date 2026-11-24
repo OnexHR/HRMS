@@ -266,7 +266,7 @@ const EmployeeTable: React.FC = () => {
                               type="button"
                               disabled={adding}
                               onClick={() => handleAddMember(emp)}
-                              className="flex shrink-0 items-center gap-1.5 rounded-lg bg-[#2459A6] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#1e4a8c] disabled:cursor-not-allowed disabled:opacity-60"
+                              className="flex shrink-0 items-center gap-1.5 rounded-lg bg-[#2459A6] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#1e4a8c]  disabled:opacity-60"
                             >
                               {adding ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />}
                               {adding ? 'Adding…' : 'Add'}
@@ -399,7 +399,7 @@ const EmployeeTable: React.FC = () => {
                                   type="button"
                                   disabled={removingId === emp._id}
                                   onClick={() => handleRemoveMember(emp)}
-                                  className="flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                  className="flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-rose-700  disabled:opacity-60"
                                 >
                                   {removingId === emp._id ? <Loader2 size={14} className="animate-spin" /> : <UserMinus size={14} />}
                                   {removingId === emp._id ? 'Removing…' : 'Yes, remove'}

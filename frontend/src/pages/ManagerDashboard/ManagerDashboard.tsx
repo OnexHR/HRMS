@@ -44,6 +44,7 @@
 import React from "react";
 import Sidebar from "../ManagerDashboard/components/Sidebar";
 import Header from "../ManagerDashboard/components/Header";
+import Footer2 from "../../components/Footer2";
 
 import TodayAttendance from "./components/TodayAttendance";
 import CurrentActivity from "../ManagerDashboard/components/CurrentActivity";
@@ -119,6 +120,7 @@ const ManagerDashboard: React.FC = () => {
             <TeamAttendanceTable />
           </div>
         </div>
+        <Footer2 />
       </main>
     </div>
   );

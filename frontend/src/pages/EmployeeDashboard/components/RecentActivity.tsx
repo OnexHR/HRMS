@@ -3,21 +3,33 @@ import { Clock } from "lucide-react";
 
 type ActivityEntry = { type: string; at: string; meta?: any };
 
-const ACTIVITY_LABELS: Record<string, { text: string; color: string; status?: string }> = {
-  checkin: { text: "Checked in", color: "bg-green-500", status: "Online" },
-  checkout: { text: "Checked out", color: "bg-gray-500" },
-  break_start: { text: "Break started", color: "bg-blue-500" },
-  break_end: { text: "Break ended", color: "bg-purple-500" },
-  meeting_start: { text: "Meeting started", color: "bg-cyan-500" },
-  meeting_end: { text: "Meeting ended", color: "bg-blue-500", status: "Back online" },
-  task_assigned: { text: "New task assigned", color: "bg-indigo-500" },
-  task_completed: { text: "Task completed", color: "bg-blue-500" },
-  profile_updated: { text: "Profile updated", color: "bg-gray-500" },
-  leave_submitted: { text: "Leave requested", color: "bg-amber-500" },
-  leave_approved: { text: "Leave approved", color: "bg-green-500" },
-  leave_rejected: { text: "Leave rejected", color: "bg-rose-500" },
-  query_raised: { text: "Query raised", color: "bg-amber-500" },
-  query_reviewed: { text: "Query reviewed", color: "bg-blue-500" },
+type Category = { label: string; pill: string };
+
+const CAT: Record<string, Category> = {
+  attendance: { label: "Attendance", pill: "bg-green-100 text-green-700" },
+  break: { label: "Break", pill: "bg-blue-100 text-blue-700" },
+  meeting: { label: "Meeting", pill: "bg-purple-100 text-purple-700" },
+  task: { label: "Work", pill: "bg-green-100 text-green-700" },
+  leave: { label: "Leave", pill: "bg-amber-100 text-amber-700" },
+  query: { label: "Query", pill: "bg-rose-100 text-rose-600" },
+  profile: { label: "Profile", pill: "bg-gray-100 text-gray-600" },
+};
+
+const ACTIVITY_LABELS: Record<string, { text: string; category: Category; status?: string }> = {
+  checkin: { text: "Checked in", category: CAT.attendance, status: "Online" },
+  checkout: { text: "Checked out", category: CAT.attendance },
+  break_start: { text: "Break started", category: CAT.break },
+  break_end: { text: "Break ended", category: CAT.break },
+  meeting_start: { text: "Meeting started", category: CAT.meeting },
+  meeting_end: { text: "Meeting ended", category: CAT.meeting, status: "Back online" },
+  task_assigned: { text: "New work assigned", category: CAT.task },
+  task_completed: { text: "Work completed", category: CAT.task },
+  profile_updated: { text: "Profile updated", category: CAT.profile },
+  leave_submitted: { text: "Leave requested", category: CAT.leave },
+  leave_approved: { text: "Leave approved", category: CAT.leave },
+  leave_rejected: { text: "Leave rejected", category: CAT.leave },
+  query_raised: { text: "Query raised", category: CAT.query },
+  query_reviewed: { text: "Query reviewed", category: CAT.query },
 };
 
 // Extra text shown after the label, e.g. "New task assigned · by Surjya Paul".
@@ -52,8 +64,8 @@ function readableLabel(type: string): string {
     .join(" ");
 }
 
-// Local-calendar key (YYYY-MM-DD), so grouping follows the employee's own day
-// rather than UTC.
+// Local-calendar key (YYYY-MM-DD), so "Today"/"Yesterday" follow the
+// employee's own day rather than UTC.
 function dayKey(d: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -78,106 +90,83 @@ function dayLabel(d: Date) {
   });
 }
 
-type Group = { key: string; label: string; entries: ActivityEntry[] };
-
-// Newest first, then split into one group per calendar day.
-function groupByDay(items: ActivityEntry[]): Group[] {
-  const sorted = [...items]
-    .filter((a) => !Number.isNaN(new Date(a.at).getTime()))
-    .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
-
-  const groups: Group[] = [];
-  for (const entry of sorted) {
-    const d = new Date(entry.at);
-    const key = dayKey(d);
-    const last = groups[groups.length - 1];
-    if (last && last.key === key) {
-      last.entries.push(entry);
-    } else {
-      groups.push({ key, label: dayLabel(d), entries: [entry] });
-    }
-  }
-  return groups;
-}
+const CARD =
+  "rounded-2xl border border-white/80 bg-white/85 shadow-[0_8px_30px_rgba(37,70,170,0.08)] backdrop-blur";
 
 const RecentActivity: React.FC<{ activities?: ActivityEntry[]; loading?: boolean }> = ({
   activities,
   loading,
 }) => {
-  const groups = groupByDay(activities ?? []);
+  // Newest first.
+  const items = [...(activities ?? [])]
+    .filter((a) => !Number.isNaN(new Date(a.at).getTime()))
+    .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
 
   return (
-    <section className="flex h-[520px] flex-col rounded-2xl border border-gray-100 bg-white px-6 pb-8 pt-5 shadow-sm">
+    <section className={`${CARD} flex h-[520px] flex-col px-5 pb-6 pt-5`}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Clock size={20} className="text-[#10284A]" />
-
-          <h3 className="text-lg font-semibold text-[#10284A]">Recent activity</h3>
-        </div>
+      <div className="flex items-center gap-3">
+        <Clock size={24} className="text-[#1D4ED8]" />
+        <h3 className="text-[22px] font-extrabold text-[#14226B]">Recent activity</h3>
       </div>
 
-      <div className="mt-5 min-h-0 flex-1 overflow-y-auto pr-5 [scrollbar-gutter:stable]">
+      <div className="mt-4 min-h-0 flex-1 overflow-y-auto pr-3 [scrollbar-gutter:stable]">
         {loading ? (
           <p className="text-sm text-gray-400">Loading…</p>
-        ) : groups.length === 0 ? (
+        ) : items.length === 0 ? (
           <p className="text-sm text-gray-400">No recent activity.</p>
         ) : (
           <div className="relative">
-            {/* Timeline line runs the full height of the content */}
-            <div className="absolute bottom-2 left-[7px] top-2 w-px bg-gray-200" />
+            {/* Timeline line */}
+            <div className="absolute bottom-3 left-[6px] top-3 w-px bg-slate-300" />
 
-            <div className="flex flex-col gap-5">
-              {groups.map((group) => (
-                <div key={group.key} className="relative">
-                  {/* Date label */}
-                  <div className="relative mb-3 flex items-center gap-3">
-                    <span className="relative z-10 h-4 w-4 shrink-0 rounded-full border-2 border-white bg-[#10284A]" />
-                    <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-[#2459A6]">
-                      {group.label}
-                    </span>
-                    <span className="h-px flex-1 bg-gray-100" />
+            <div className="flex flex-col">
+              {items.map((activity, index) => {
+                const meta = ACTIVITY_LABELS[activity.type] || {
+                  text: readableLabel(activity.type),
+                  category: { label: "Activity", pill: "bg-gray-100 text-gray-600" },
+                };
+                const detail = detailFor(activity.type, activity.meta);
+                const when = new Date(activity.at);
+
+                return (
+                  <div
+                    key={`${activity.type}-${activity.at}-${index}`}
+                    className="relative flex items-start gap-4 border-b border-blue-50 py-3.5 last:border-b-0"
+                  >
+                    {/* Timeline dot */}
+                    <span className="relative z-10 mt-1.5 h-3.5 w-3.5 shrink-0 rounded-full border-2 border-white bg-slate-500 shadow-sm" />
+
+                    {/* Text */}
+                    <div className="min-w-0 flex-1">
+                      <p className="whitespace-nowrap text-[13px] text-gray-500">
+                        {dayLabel(when)}, {formatTime(activity.at)}
+                      </p>
+                      <p className="mt-0.5 text-[15px] font-bold leading-snug text-[#14226B]">
+                        {meta.text}
+                        {detail && (
+                          <span className="ml-1.5 font-medium text-gray-500">· {detail}</span>
+                        )}
+                      </p>
+                    </div>
+
+                    {/* Badges */}
+                    <div className="flex shrink-0 flex-col items-end gap-1.5">
+                      <span
+                        className={`rounded-full px-3.5 py-1 text-[12px] font-semibold leading-none ${meta.category.pill}`}
+                      >
+                        {meta.category.label}
+                      </span>
+                      {meta.status && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-3 py-1 text-[11px] font-semibold leading-none text-green-600">
+                          <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                          {meta.status}
+                        </span>
+                      )}
+                    </div>
                   </div>
-
-                  <div className="flex flex-col gap-4">
-                    {group.entries.map((activity, index) => {
-                      const meta =
-                        ACTIVITY_LABELS[activity.type] || { text: readableLabel(activity.type), color: "bg-gray-400" };
-                      return (
-                        <div key={`${group.key}-${index}`} className="relative flex items-center gap-4">
-                          {/* Timeline Dot */}
-                          <div
-                            className={`relative z-10 h-4 w-4 shrink-0 rounded-full border-2 border-white ${meta.color}`}
-                          />
-
-                          {/* Time */}
-                          <span className="w-20 shrink-0 whitespace-nowrap text-xs text-gray-500">
-                            {formatTime(activity.at)}
-                          </span>
-
-                          {/* Activity */}
-                          <span className="min-w-0 flex-1 text-sm font-medium text-[#10284A]">
-                            {meta.text}
-                            {detailFor(activity.type, activity.meta) && (
-                              <span className="ml-1.5 font-normal text-gray-500">
-                                · {detailFor(activity.type, activity.meta)}
-                              </span>
-                            )}
-                          </span>
-
-                          {/* Status */}
-                          {meta.status && (
-                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-[11px] font-semibold leading-none text-green-600">
-                              <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                              {meta.status}
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

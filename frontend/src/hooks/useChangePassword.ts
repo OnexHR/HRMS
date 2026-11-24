@@ -23,5 +23,10 @@ export function useChangePassword(_role: "employee" | "manager" = "employee") {
     }
   };
 
-  return { changePassword, loading, error, success };
+  const reset = () => {
+    setError(null);
+    setSuccess(false);
+  };
+
+  return { changePassword, loading, error, success, reset };
 }

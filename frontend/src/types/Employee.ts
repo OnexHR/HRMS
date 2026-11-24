@@ -45,7 +45,14 @@ export type AttendanceToday = {
 
 export type EmployeeDashboardData = {
   attendanceToday?: AttendanceToday;
-  summary?: Record<string, number>;
+  summary?: {
+    startDate?: string;
+    endDate?: string;
+    totalWorkingMinutes?: number;
+    totalOvertimeMinutes?: number;
+    presentDays?: number;
+    tasksCompleted?: number;
+  };
   taskSummary?: TaskSummary;
   recentActivity?: Array<{ type: string; at: string; meta?: Record<string, unknown> }>;
   meetings?: Array<{

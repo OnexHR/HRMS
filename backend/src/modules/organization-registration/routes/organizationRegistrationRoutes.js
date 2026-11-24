@@ -2,6 +2,7 @@ import crypto from 'node:crypto'
 import path from 'node:path'
 import fs from 'node:fs'
 import express from 'express'
+import mongoose from 'mongoose'
 import multer from 'multer'
 import { env } from '../../../config/env.js'
 import { OrganizationRegistration } from '../models/OrganizationRegistration.js'
@@ -78,7 +79,17 @@ router.post('/otp/verify', (req, res) => {
   res.json({ success: true, data: { verificationToken: record.verificationToken } })
 })
 
-router.post('/registrations', fields, async (req, res) => {
+function requireDatabase(_req, res, next) {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({
+      success: false,
+      error: { message: 'Database is not connected. Set a reachable MONGODB_URI to enable organization registration.' },
+    })
+  }
+  return next()
+}
+
+router.post('/registrations', requireDatabase, fields, async (req, res) => {
   try {
     let payload
     try {

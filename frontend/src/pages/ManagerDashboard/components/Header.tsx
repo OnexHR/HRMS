@@ -122,7 +122,7 @@ const Header: React.FC<{
     runAction(() => employeeApi.post("/attendance/check-out"));
 
   return (
-    <header className="sticky top-0 z-10 mx-4 mt-3 rounded-2xl border border-gray-100 bg-white px-6 py-4 shadow-sm">
+    <header className="sticky top-0 z-10 mx-4 mt-3 rounded-2xl border border-blue-200 bg-white px-6 py-4 shadow-[0_10px_28px_rgba(37,70,170,0.14)]">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-50 text-[#2459A6]">

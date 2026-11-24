@@ -320,7 +320,7 @@ const ManagerProfile: React.FC = () => {
                       type="button"
                       onClick={handleRemovePicture}
                       disabled={imageLoading !== null || !formData.imageUrl}
-                      className="flex items-center gap-2 rounded-lg border border-rose-500 bg-white px-4 py-2 text-sm font-medium text-gray-800 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex items-center gap-2 rounded-lg border border-rose-500 bg-white px-4 py-2 text-sm font-medium text-gray-800 transition hover:bg-rose-50  disabled:opacity-50"
                     >
                       {imageLoading === "remove" ? (
                         <Loader2 size={16} className="animate-spin" />
@@ -359,7 +359,7 @@ const ManagerProfile: React.FC = () => {
                       type="text"
                       value={formData.firstName}
                       disabled
-                      className="mt-2 w-full cursor-not-allowed rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 outline-none"
+                      className="mt-2 w-full  rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 outline-none"
                     />
                   </div>
 
@@ -371,7 +371,7 @@ const ManagerProfile: React.FC = () => {
                       type="text"
                       value={formData.lastName}
                       disabled
-                      className="mt-2 w-full cursor-not-allowed rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 outline-none"
+                      className="mt-2 w-full  rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 outline-none"
                     />
                   </div>
 
@@ -383,7 +383,7 @@ const ManagerProfile: React.FC = () => {
                       type="email"
                       value={formData.email}
                       disabled
-                      className="mt-2 w-full cursor-not-allowed rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 outline-none"
+                      className="mt-2 w-full  rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 outline-none"
                     />
                   </div>
 
@@ -412,7 +412,7 @@ const ManagerProfile: React.FC = () => {
                       value={formData.department}
                       readOnly
                       placeholder="Set by admin"
-                      className="mt-2 w-full cursor-not-allowed rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 outline-none placeholder:text-gray-400"
+                      className="mt-2 w-full  rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 outline-none placeholder:text-gray-400"
                     />
                   </div>
 
@@ -428,7 +428,7 @@ const ManagerProfile: React.FC = () => {
                       value={formData.designation}
                       readOnly
                       placeholder="Set by admin"
-                      className="mt-2 w-full cursor-not-allowed rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 outline-none placeholder:text-gray-400"
+                      className="mt-2 w-full  rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 outline-none placeholder:text-gray-400"
                     />
                   </div>
 
@@ -441,7 +441,7 @@ const ManagerProfile: React.FC = () => {
                       value={formData.employeeCode}
                       disabled
                       placeholder="e.g. MGR001"
-                      className="mt-2 w-full cursor-not-allowed rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 outline-none placeholder:text-gray-400"
+                      className="mt-2 w-full  rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 outline-none placeholder:text-gray-400"
                     />
                   </div>
 
@@ -451,7 +451,7 @@ const ManagerProfile: React.FC = () => {
                       type="text"
                       value={formData.joinDate}
                       disabled
-                      className="mt-2 w-full cursor-not-allowed rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 outline-none"
+                      className="mt-2 w-full  rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 outline-none"
                     />
                   </div>
 
@@ -478,7 +478,7 @@ const ManagerProfile: React.FC = () => {
                     type="button"
                     onClick={handleSave}
                     disabled={!isFormChanged || saving}
-                    className="rounded-xl bg-[#2459A6] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1e4a8c] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-xl bg-[#2459A6] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1e4a8c]  disabled:opacity-50"
                   >
                     {saving ? "Saving..." : "Save Changes"}
                   </button>
@@ -487,7 +487,7 @@ const ManagerProfile: React.FC = () => {
                     type="button"
                     onClick={handleCancel}
                     disabled={!isFormChanged || saving}
-                    className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-50  disabled:opacity-50"
                   >
                     Cancel
                   </button>

@@ -71,7 +71,7 @@ export function UpdatePasswordButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex items-center gap-2 rounded-lg bg-[#2459A6] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+      className="inline-flex items-center gap-2 rounded-lg bg-[#2459A6] px-4 py-2 text-sm font-semibold text-white  disabled:opacity-50"
     >
       {loading && <Loader2 size={16} className="animate-spin" />}
       Update Password

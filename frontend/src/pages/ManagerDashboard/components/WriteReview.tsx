@@ -149,7 +149,7 @@ const ReviewEditor: React.FC<{
         <button
           type="submit"
           disabled={submitting}
-          className="flex items-center gap-2 rounded-xl bg-[#2459A6] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1e4a8c] disabled:cursor-not-allowed disabled:opacity-70"
+          className="flex items-center gap-2 rounded-xl bg-[#2459A6] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1e4a8c]  disabled:opacity-70"
         >
           {submitting ? <Loader2 size={16} className="animate-spin" /> : <CheckCheck size={16} />}
           {submitting ? "Saving…" : "Submit review"}

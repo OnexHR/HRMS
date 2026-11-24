@@ -97,7 +97,7 @@ const DateAndAssignedTasks: React.FC = () => {
                     cell.dim
                       ? "cursor-default text-gray-300"
                       : isSelected
-                      ? "bg-[#2459A6] font-semibold text-white"
+                      ? "employee-primary-action font-semibold"
                       : "text-gray-600 hover:bg-gray-100"
                   }`}
                 >
@@ -114,7 +114,7 @@ const DateAndAssignedTasks: React.FC = () => {
         <div className="flex items-center gap-2">
           <Users2 size={20} className="text-[#10284A]" />
           <h3 className="text-lg font-semibold text-[#10284A]">
-            Manager assigned tasks
+            Manager assigned work
           </h3>
         </div>
 

@@ -1,6 +1,24 @@
-import React, { useEffect, useState } from "react";
-import { FileText, Paperclip, ChevronDown } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  CalendarDays,
+  FilePlus2,
+  Paperclip,
+  Phone,
+  RotateCcw,
+  Save,
+  Send,
+  Sun,
+  UploadCloud,
+  UserRound,
+} from "lucide-react";
 import employeeApi from "../../../lib/employeeApi";
+import {
+  EMPLOYEE_LEAVE_DRAFT_EDIT_EVENT,
+  getEmployeeLeaveRequests,
+  saveEmployeeLeaveRequest,
+} from "../../../lib/employeeLeaveStore";
+import StyledSelect from "./StyledSelect";
+import LeaveDatePicker from "./LeaveDatePicker";
 
 const leaveTypes = [
   { value: "casual", label: "Casual Leave" },
@@ -14,18 +32,32 @@ const dayTypes = [
   { value: "second_half", label: "Second Half" },
 ];
 
+const DEFAULT_FROM = "2026-09-22";
+const DEFAULT_TO = "2026-09-23";
+const MAX_REASON = 500;
+const MAX_FILE_BYTES = 5 * 1024 * 1024;
+const inputBase =
+  "w-full rounded-xl border border-blue-100 bg-white py-3 pl-11 pr-4 text-sm font-medium text-[#14226B] outline-none placeholder:font-normal placeholder:text-gray-400 focus:border-[#1D5BFF] focus:ring-4 focus:ring-blue-100";
+const iconCls = "pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#14226B]";
+
+const CARD =
+  "rounded-2xl border border-white/80 bg-white/85 shadow-[0_8px_30px_rgba(37,70,170,0.08)] backdrop-blur";
+
 const NewLeaveRequestForm: React.FC = () => {
   const [leaveType, setLeaveType] = useState("casual");
   const [reportingManager, setReportingManager] = useState("Reporting Manager");
-  const [fromDate, setFromDate] = useState("2026-09-22");
-  const [toDate, setToDate] = useState("2026-09-23");
+  const [fromDate, setFromDate] = useState(DEFAULT_FROM);
+  const [toDate, setToDate] = useState(DEFAULT_TO);
   const [dayType, setDayType] = useState("full_day");
   const [contact, setContact] = useState("");
   const [reason, setReason] = useState("");
   const [fileName, setFileName] = useState("");
+  const [editingDraftId, setEditingDraftId] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [successText, setSuccessText] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     employeeApi
@@ -40,6 +72,40 @@ const NewLeaveRequestForm: React.FC = () => {
       .catch(() => {
         setReportingManager("Reporting Manager");
       });
+  }, []);
+
+  useEffect(() => {
+    const handleEditDraft = (event: Event) => {
+      const id = (event as CustomEvent<{ id?: string }>).detail?.id;
+      if (!id) return;
+
+      try {
+        const draft = getEmployeeLeaveRequests().find(
+          (request) => request.id === id && request.status === "draft",
+        );
+        if (!draft) {
+          setSubmitError("This draft is no longer available. Refresh the draft list and try again.");
+          return;
+        }
+
+        setLeaveType(draft.leaveType);
+        setFromDate(draft.fromDate);
+        setToDate(draft.toDate);
+        setDayType(draft.dayType);
+        setContact(draft.contactWhileOnLeave);
+        setReason(draft.reason);
+        setFileName(draft.attachments[0] ?? "");
+        setEditingDraftId(draft.id);
+        setSubmitError(null);
+        setSuccessText(null);
+        document.getElementById("new-leave-request")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      } catch (error) {
+        setSubmitError(error instanceof Error ? error.message : "Could not open this draft.");
+      }
+    };
+
+    window.addEventListener(EMPLOYEE_LEAVE_DRAFT_EDIT_EVENT, handleEditDraft);
+    return () => window.removeEventListener(EMPLOYEE_LEAVE_DRAFT_EDIT_EVENT, handleEditDraft);
   }, []);
 
   const durationDays =
@@ -61,8 +127,38 @@ const NewLeaveRequestForm: React.FC = () => {
         })
       : "";
 
+  const pickFile = (file?: File | null) => {
+    if (!file) return;
+    if (file.size > MAX_FILE_BYTES) {
+      setSubmitError("Attachment is larger than 5 MB.");
+      return;
+    }
+    setSubmitError(null);
+    setFileName(file.name);
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFileName(e.target.files?.[0]?.name || "");
+    pickFile(e.target.files?.[0]);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setDragging(false);
+    pickFile(e.dataTransfer.files?.[0]);
+  };
+
+  const handleReset = () => {
+    setLeaveType("casual");
+    setFromDate(DEFAULT_FROM);
+    setToDate(DEFAULT_TO);
+    setDayType("full_day");
+    setContact("");
+    setReason("");
+    setFileName("");
+    setEditingDraftId(null);
+    setSubmitError(null);
+    setSuccessText(null);
+    if (fileRef.current) fileRef.current.value = "";
   };
 
   const submitLeave = async (mode: "submit" | "draft") => {
@@ -87,11 +183,21 @@ const NewLeaveRequestForm: React.FC = () => {
         attachments: fileName ? [fileName] : [],
       };
 
-      const endpoint = mode === "submit" ? "/leave" : "/leave/draft";
-      await employeeApi.post(endpoint, payload);
-      setSuccessText(mode === "submit" ? "Leave request submitted successfully." : "Leave draft saved successfully.");
-    } catch (error: any) {
-      setSubmitError(error.response?.data?.message || "Could not save leave request.");
+      saveEmployeeLeaveRequest(
+        payload,
+        mode === "submit" ? "pending" : "draft",
+        editingDraftId ?? undefined,
+      );
+      setSuccessText(
+        mode === "submit"
+          ? "Leave request submitted successfully."
+          : editingDraftId
+            ? "Draft request updated successfully."
+            : "Leave draft saved successfully.",
+      );
+      if (mode === "submit") setEditingDraftId(null);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Could not save leave request.");
     } finally {
       setSaving(false);
     }
@@ -100,161 +206,193 @@ const NewLeaveRequestForm: React.FC = () => {
   const handleSubmit = () => submitLeave("submit");
   const handleSaveDraft = () => submitLeave("draft");
 
-  const fieldInput =
-    "mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-700 outline-none placeholder:text-gray-400 focus:border-[#2459A6]";
-  const labelCls = "text-[13px] font-medium text-[#10284A]";
+  const labelCls = "text-[14px] font-bold text-[#14226B]";
 
   return (
-    <section className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-      <div className="flex items-center gap-2">
-        <FileText size={20} className="text-[#10284A]" />
-        <h3 className="text-lg font-semibold text-[#10284A]">New Leave Request</h3>
+    <section id="new-leave-request" className={`${CARD} scroll-mt-6 p-6`}>
+      <div className="flex items-center gap-3">
+        <FilePlus2 size={28} className="text-[#1D4ED8]" />
+        <div>
+          <h3 className="text-[22px] font-extrabold leading-tight text-[#14226B]">
+            {editingDraftId ? "Edit Draft Request" : "New Leave Request"}
+          </h3>
+          <p className="text-[13px] text-gray-500">
+            {editingDraftId ? "Update your saved leave request" : "Fill in the details below to apply for a leave"}
+          </p>
+        </div>
       </div>
-      <p className="mt-0.5 text-xs text-gray-500">
-        Requests are sent to your reporting manager for approval.
-      </p>
 
-      {submitError && <p className="mt-2 text-sm text-rose-600">{submitError}</p>}
-      {successText && <p className="mt-2 text-sm text-emerald-600">{successText}</p>}
+      {submitError && <p className="mt-3 text-sm text-rose-600">{submitError}</p>}
+      {successText && <p className="mt-3 text-sm text-emerald-600">{successText}</p>}
 
-      {/* 3 columns instead of 2, so the form needs far fewer rows */}
-      <div className="mt-3 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-3">
+      <div className="mt-5 grid grid-cols-1 gap-x-5 gap-y-5 md:grid-cols-2">
+        {/* Leave type */}
         <div>
           <label className={labelCls}>
             Leave Type <span className="text-rose-500">*</span>
           </label>
-          <div className="relative">
-            <select
+          <div className="mt-1.5">
+            <StyledSelect
               value={leaveType}
-              onChange={(e) => setLeaveType(e.target.value)}
-              className={`${fieldInput} appearance-none`}
-            >
-              {leaveTypes.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              size={16}
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+              onChange={setLeaveType}
+              options={leaveTypes}
+              leadingIcon={<CalendarDays size={18} />}
+              ariaLabel="Leave Type"
             />
           </div>
         </div>
 
+        {/* Reporting manager */}
         <div>
           <label className={labelCls}>
             Reporting Manager <span className="text-rose-500">*</span>
           </label>
-          <input value={reportingManager} readOnly className={`${fieldInput} bg-gray-50`} />
+          <div className="relative mt-1.5">
+            <UserRound size={18} className={iconCls} />
+            <input value={reportingManager} readOnly className={`${inputBase} bg-[#EDF1F8] text-gray-600`} />
+          </div>
         </div>
 
+        {/* Day type */}
         <div>
           <label className={labelCls}>Day Type</label>
-          <div className="relative">
-            <select
+          <div className="mt-1.5">
+            <StyledSelect
               value={dayType}
-              onChange={(e) => setDayType(e.target.value)}
-              className={`${fieldInput} appearance-none`}
-            >
-              {dayTypes.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              size={16}
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+              onChange={setDayType}
+              options={dayTypes}
+              leadingIcon={<Sun size={18} />}
+              ariaLabel="Day Type"
             />
           </div>
         </div>
 
+        <div className="hidden md:block" />
+
+        {/* Dates */}
         <div>
           <label className={labelCls}>
             From Date <span className="text-rose-500">*</span>
           </label>
-          <input
-            type="date"
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
-            className={fieldInput}
-          />
+          <div className="mt-1.5">
+            <LeaveDatePicker value={fromDate} onChange={setFromDate} label="From Date" />
+          </div>
         </div>
 
         <div>
           <label className={labelCls}>
             To Date <span className="text-rose-500">*</span>
           </label>
-          <input
-            type="date"
-            value={toDate}
-            onChange={(e) => setToDate(e.target.value)}
-            className={fieldInput}
-          />
+          <div className="mt-1.5">
+            <LeaveDatePicker value={toDate} onChange={setToDate} label="To Date" />
+          </div>
         </div>
 
-        <div>
+        {durationDays > 0 && fromDate && toDate && (
+          <p className="text-sm font-semibold text-[#1D4ED8] md:col-span-2 md:-mt-2">
+            Duration: {durationDays} day{durationDays > 1 ? "s" : ""} ({formatShort(fromDate)} – {formatShort(toDate)})
+          </p>
+        )}
+
+        {/* Contact */}
+        <div className="md:col-span-2">
           <label className={labelCls}>Contact While on Leave</label>
-          <input
-            type="text"
-            value={contact}
-            onChange={(e) => setContact(e.target.value)}
-            placeholder="Phone or alternate contact"
-            className={fieldInput}
-          />
+          <div className="relative mt-1.5">
+            <Phone size={18} className={iconCls} />
+            <input
+              type="text"
+              value={contact}
+              onChange={(e) => setContact(e.target.value)}
+              placeholder="Phone or alternate contact"
+              className={inputBase}
+            />
+          </div>
         </div>
 
-        <div className="sm:col-span-2">
+        {/* Reason */}
+        <div className="grid gap-5 md:col-span-2 md:grid-cols-[minmax(0,1.35fr)_minmax(260px,1fr)]">
           <label className={labelCls}>
-            Reason <span className="text-rose-500">*</span>
+            <span>
+              Reason <span className="text-rose-500">*</span>
+            </span>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value.slice(0, MAX_REASON))}
+              placeholder="Enter reason for leave..."
+              rows={4}
+              className="mt-1.5 block h-32 w-full resize-none rounded-xl border border-blue-100 bg-white px-4 py-3 text-sm font-medium text-[#14226B] outline-none placeholder:font-normal placeholder:text-gray-400 focus:border-[#1D5BFF] focus:ring-4 focus:ring-blue-100"
+            />
+            <span className="mt-1 block text-right text-xs font-normal text-gray-500">
+              {reason.length} / {MAX_REASON}
+            </span>
           </label>
-          <textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Briefly describe the reason for your leave..."
-            rows={2}
-            className={`${fieldInput} resize-none`}
-          />
-        </div>
 
-        <div>
-          <label className={labelCls}>Attachments</label>
-          <label className="mt-1.5 flex h-[calc(100%-1.5rem)] min-h-[58px] cursor-pointer items-center gap-2 rounded-xl border border-dashed border-gray-300 px-3 py-2 text-xs text-gray-500 transition hover:bg-gray-50">
-            <Paperclip size={16} className="shrink-0" />
-            <span className="min-w-0 truncate">{fileName || "Add file (optional, e.g. medical certificate)"}</span>
-            <input type="file" onChange={handleFileChange} className="hidden" />
-          </label>
+          <div>
+            <div className="flex items-center gap-2">
+              <Paperclip size={18} className="text-[#1D4ED8]" />
+              <span className={labelCls}>
+                Attachments <span className="font-normal text-gray-500">(Optional)</span>
+              </span>
+            </div>
+
+            <label
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragging(true);
+              }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={handleDrop}
+              className={`mt-1.5 flex h-32 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 text-center transition ${
+                dragging ? "border-[#1D5BFF] bg-blue-50" : "border-blue-200 bg-[#F5F8FF] hover:bg-blue-50"
+              }`}
+            >
+              <UploadCloud size={28} strokeWidth={1.7} className="text-[#14226B]" />
+              <p className="mt-2 max-w-full truncate text-sm font-medium text-[#14226B]">
+                {fileName || "Drop or click to upload"}
+              </p>
+              <p className="mt-1 text-[11px] text-gray-500">PDF, DOC, DOCX, JPG, PNG · Max 5MB</p>
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </label>
+          </div>
         </div>
       </div>
 
-      {/* Duration and actions share one row */}
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm font-medium text-[#2459A6]">
-          {durationDays > 0 && fromDate && toDate && (
-            <>
-              Duration: {durationDays} day{durationDays > 1 ? "s" : ""} ({formatShort(fromDate)} –{" "}
-              {formatShort(toDate)})
-            </>
-          )}
-        </p>
+      {/* Actions */}
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+        <button
+          type="button"
+          disabled={saving}
+          onClick={handleReset}
+          className="flex items-center gap-2 rounded-xl border border-[#1D5BFF] bg-white px-6 py-3 text-sm font-semibold text-[#1D4ED8] transition hover:bg-blue-50 disabled:opacity-60"
+        >
+          <RotateCcw size={17} />
+          Reset Form
+        </button>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
             disabled={saving}
             onClick={handleSaveDraft}
-            className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 transition hover:bg-gray-50 disabled:opacity-60"
+            className="flex items-center gap-2 rounded-xl border border-[#1D5BFF] bg-white px-6 py-3 text-sm font-semibold text-[#1D4ED8] transition hover:bg-blue-50 disabled:opacity-60"
           >
-            Save as Draft
+            <Save size={17} />
+            {editingDraftId ? "Update Draft" : "Save as Draft"}
           </button>
 
           <button
             type="button"
             disabled={saving}
             onClick={handleSubmit}
-            className="rounded-xl bg-[#2459A6] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1e4a8c] disabled:opacity-60"
+            className="employee-primary-action flex items-center gap-2 rounded-xl px-7 py-3 text-sm font-semibold transition"
           >
+            <Send size={17} />
             {saving ? "Submitting..." : "Submit Request"}
           </button>
         </div>

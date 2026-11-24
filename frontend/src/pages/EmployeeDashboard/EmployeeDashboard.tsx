@@ -1,54 +1,8 @@
-// import React from "react";
-// import Sidebar from "./components/Sidebar";
-// import Header from "./components/Header";
-// import Calendar from "./Calendar";
-// import TodayAttendance from "./components/TodayAttendance";
-// import ApplyLeave from "./Sections/ApplyForLeave";
-// import WorkSummary from "./components/WorkSummary";
-// import AttendanceDetails from "./components/AttendanceDetails";
-// import RecentActivity from "./components/RecentActivity";
-// import MeetingSummary from "./components/MeetingSummary";
-
-// const EmployeeDashboard: React.FC = () => {
-//   const [activePage, setActivePage] = React.useState("dashboard");
-//   return (
-//     <div className="min-h-screen bg-slate-50 text-gray-800">
-//       <Sidebar
-//         onNavigate={setActivePage}
-//         activePage={activePage}
-//       />
-
-//       <main className="ml-60">
-//         <Header />
-
-//         <div className="space-y-6 p-6">
-//           {activePage === "dashboard" && (
-//             <>
-//               <TodayAttendance onLeaveRequest={() => setActivePage("applyLeave")} />
-//               <WorkSummary />
-//               <AttendanceDetails />
-
-//               <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
-//                 <RecentActivity />
-//                 <MeetingSummary />
-//               </div>
-//             </>
-//           )}
-
-//           {activePage === "calendar" && <Calendar />}
-//           {activePage === "applyLeave" && <ApplyLeave />}
-//         </div>
-//       </main>
-//     </div>
-//   );
-// };
-
-// export default EmployeeDashboard;
-
-
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
+import Footer2 from "../../components/Footer2";
 import Calendar from "./Calendar";
 import TodayAttendance from "./components/TodayAttendance";
 import ApplyLeave from "./Sections/ApplyForLeave";
@@ -56,10 +10,11 @@ import WorkSummary from "./components/WorkSummary";
 import AttendanceDetails from "./components/AttendanceDetails";
 import RecentActivity from "./components/RecentActivity";
 import MeetingSummary from "./components/MeetingSummary";
-import employeeApi from "../../lib/employeeApi";
+import { getDemoDashboard } from "../../lib/employeeDashboardDemo";
 import type { EmployeeDashboardData } from "../../types/Employee";
 
 const EmployeeDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [activePage, setActivePage] = React.useState("dashboard");
   const [dashboard, setDashboard] = React.useState<EmployeeDashboardData | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -68,10 +23,10 @@ const EmployeeDashboard: React.FC = () => {
   const fetchDashboard = React.useCallback(async () => {
     try {
       setError(null);
-      const res = await employeeApi.get<EmployeeDashboardData>("/dashboard");
-      setDashboard(res.data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Could not load your dashboard.");
+      setDashboard(getDemoDashboard());
+    } catch (demoError) {
+      setDashboard(null);
+      setError(demoError instanceof Error ? demoError.message : "Could not load demo dashboard data.");
     } finally {
       setLoading(false);
     }
@@ -82,11 +37,12 @@ const EmployeeDashboard: React.FC = () => {
   }, [fetchDashboard]);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-[#E6EDFF] via-[#EFF3FF] to-[#E3EAFF] text-gray-800">
       <Sidebar active="dashboard" />
 
       <main className="ml-60">
         <Header
+          variant="dashboard"
           attendanceToday={dashboard?.attendanceToday}
           loading={loading}
           onRefresh={fetchDashboard}
@@ -105,9 +61,17 @@ const EmployeeDashboard: React.FC = () => {
                 attendanceToday={dashboard?.attendanceToday}
                 loading={loading}
                 onRefresh={fetchDashboard}
-                onLeaveRequest={() => setActivePage("applyLeave")}
+                onLeaveRequest={() => {
+                  setActivePage("applyLeave");
+                  navigate("/employee/apply-leave");
+                }}
               />
-              <WorkSummary summary={dashboard?.summary} taskSummary={dashboard?.taskSummary} loading={loading} />
+              <WorkSummary
+                summary={dashboard?.summary}
+                taskSummary={dashboard?.taskSummary}
+                attendanceToday={dashboard?.attendanceToday}
+                loading={loading}
+              />
               <AttendanceDetails />
 
               <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
@@ -120,6 +84,7 @@ const EmployeeDashboard: React.FC = () => {
           {activePage === "calendar" && <Calendar />}
           {activePage === "applyLeave" && <ApplyLeave />}
         </div>
+        <Footer2 />
       </main>
     </div>
   );

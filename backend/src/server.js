@@ -6,8 +6,14 @@ let server
 
 async function start() {
   if (env.mongodbUri) {
-    await connectDatabase()
-    console.log('MongoDB connected')
+    try {
+      await connectDatabase()
+      console.log('MongoDB connected')
+    } catch (error) {
+      if (env.nodeEnv === 'production') throw error
+      console.warn(`MongoDB connection failed: ${error.message}`)
+      console.warn('Starting the API without a database connection (development only).')
+    }
   } else {
     console.warn('MONGODB_URI is not set; starting without a database connection')
   }
