@@ -541,12 +541,66 @@
 .org-review-card { margin-bottom:10px; border:1px solid #dde6f2; border-radius:11px; overflow:hidden; }.org-review-title { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; background:#f7f9fc; }.org-review-title h3 { margin:0; font-size:12px; }.org-review-title button { border:0; background:none; color:#0866d9; font-size:11px; font-weight:700; cursor:pointer; }.org-review-card dl { display:grid; grid-template-columns:1fr 1fr; gap:7px 14px; margin:0; padding:10px 12px; }.org-review-card dl div { display:flex; flex-direction:column; }.org-review-card dt { color:#8794a8; font-size:9px; }.org-review-card dd { margin:2px 0 0; color:#263f64; font-size:11px; }
 .org-submit-error { margin-top:10px; padding:10px; border-radius:8px; background:#feecec; color:#b52b2b; font-size:12px; }
 .org-success { min-height:580px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }.org-success-icon { width:72px; height:72px; display:grid; place-items:center; border-radius:50%; background:#e7f7ef; color:#16885b; }.org-success h2 { max-width:520px; margin:18px 0 8px; font-size:25px; }.org-success > p { max-width:560px; margin:0 0 20px; color:#718096; font-size:13px; line-height:1.6; }.org-success-grid { width:min(520px,100%); display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }.org-success-grid div { display:flex; flex-direction:column; padding:12px; border:1px solid #e1e7f0; border-radius:9px; text-align:left; }.org-success-grid span { color:#8794a8; font-size:10px; }.org-success-grid strong { margin-top:3px; font-size:12px; }.org-success-grid .pending { color:#a26900; }
+.org-success-placeholder { min-height:580px; }
+.org-registration-success-backdrop {
+  position: fixed; z-index: 80; inset: 0; display: grid; place-items: center;
+  padding: 24px; background: rgba(6, 20, 60, .38);
+}
+.org-registration-success {
+  position: relative; width: min(610px, calc(100vw - 48px)); min-height: 530px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 24px 36px 36px; border: 1px solid rgba(10, 71, 167, .08); border-radius: 18px;
+  background: #fff; color: #102b60; text-align: center;
+  box-shadow: 0 24px 70px rgba(6, 20, 60, .28);
+}
+.org-registration-success-close {
+  position: absolute; z-index: 2; top: 18px; right: 18px;
+  width: 38px; height: 38px; display: grid; place-items: center;
+  border: 0; border-radius: 50%; background: #eff4fb; color: #2364b5; cursor: pointer;
+}
+.org-registration-illustration {
+  position: relative; width: 330px; height: 150px; margin: -2px auto 2px;
+  display: grid; place-items: center;
+}
+.org-registration-hourglass {
+  position: relative; z-index: 2; width: 132px; height: 132px;
+  display: grid; place-items: center; border-radius: 50%;
+  background: radial-gradient(circle, #eef7ff 0 48%, transparent 49%);
+  color: #1682ed;
+}
+.org-registration-hourglass svg { filter: drop-shadow(0 8px 8px rgba(22,130,237,.12)); }
+.org-registration-building {
+  position: absolute; bottom: 22px; width: 34px; height: 58px;
+  border: 7px solid #eef5ff; border-bottom: 0; background:
+    repeating-linear-gradient(90deg, transparent 0 8px, #c8dcf6 8px 11px, transparent 11px 16px);
+}
+.building-left { left: 58px; }.building-right { right: 58px; height: 48px; }
+.org-registration-dot { position: absolute; width: 9px; height: 9px; border-radius: 50%; background: #ffb347; transform: rotate(30deg); }
+.dot-one { left: 52px; top: 38px; }.dot-two { right: 76px; top: 30px; width: 7px; background: #ff6d66; }.dot-three { right: 40px; bottom: 42px; background: #4d99ef; }
+.org-registration-success h2 { margin: 4px 0 5px; font-size: 34px; line-height: 1.12; letter-spacing: -.03em; }
+.org-registration-subtitle { margin: 0 0 20px; color: #0866d9; font-size: 16px; font-weight: 700; }
+.org-registration-notice {
+  width: 100%; min-height: 88px; display: flex; align-items: center; gap: 16px;
+  padding: 16px 20px; border-radius: 10px; background: #eef5ff; color: #0866d9; text-align: left;
+}
+.org-registration-notice svg { flex: none; }.org-registration-notice p { margin: 0; color: #173d78; font-size: 13px; line-height: 1.55; }.org-registration-notice strong { font-weight: 700; }
+.org-registration-followup { margin: 18px 0 18px; color: #102b60; font-size: 12px; font-weight: 600; }
+.org-registration-actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.org-registration-actions button { width: 100%; height: 48px; border-radius: 10px; }
+.org-registration-actions .org-secondary { border: 1.5px solid #1682ed; color: #0866d9; }
+.org-registration-details { width: 100%; }
+.org-registration-details-icon { width: 58px; height: 58px; display: grid; place-items: center; margin: 0 auto 10px; border-radius: 50%; background: #edf5ff; color: #0866d9; }
+.org-registration-details dl { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; text-align: left; }
+.org-registration-details dl div { min-height: 70px; display: flex; flex-direction: column; justify-content: center; padding: 12px 14px; border: 1px solid #dfe8f4; border-radius: 10px; }
+.org-registration-details dt { color: #8794a8; font-size: 10px; }.org-registration-details dd { margin: 4px 0 0; font-size: 12px; font-weight: 700; overflow-wrap: anywhere; }
+.org-registration-details-status { color: #16885b; }.org-registration-primary { width: 100%; }
 .org-otp-overlay { position:fixed; z-index:70; inset:0; display:grid; place-items:center; background:rgba(6,20,60,.48); }.org-otp-modal { position:relative; width:min(380px,calc(100vw - 32px)); display:flex; flex-direction:column; align-items:center; padding:28px; border-radius:18px; background:#fff; box-shadow:0 24px 70px rgba(6,20,60,.35); text-align:center; }.org-otp-modal h2 { margin:12px 0 4px; }.org-otp-modal p { margin:0 0 14px; color:#738198; font-size:12px; }.org-otp-input { width:200px!important; height:50px!important; text-align:center; letter-spacing:.55em; font-size:20px!important; }.org-otp-modal .org-primary { width:200px; margin-top:12px; }.org-resend { margin-top:10px; border:0; background:none; color:#0866d9; font-size:11px; font-weight:700; cursor:pointer; }.org-resend:disabled { color:#99a5b7; }.org-otp-note { margin-top:8px; color:#16885b; font-size:11px; }
 @media (max-width: 900px) {
   .org-modal { grid-template-columns:240px minmax(0,1fr); }.org-sidebar { padding:22px 20px; }.org-content { padding:62px 28px 28px; }.org-actions { margin-left:-28px; margin-right:-28px; padding-left:28px; padding-right:28px; }.org-step b { display:none; }.org-stepper { grid-template-columns:repeat(4,27px); gap:8px; }.org-step:not(:last-child)::after { right:-8px; }.org-verification-grid { grid-template-columns:1fr; }
 }
 @media (max-width: 680px) {
   .org-overlay { padding:0; }.org-modal { width:100%; height:100dvh; min-height:0; border-radius:0; grid-template-columns:1fr; }.org-sidebar { display:none; }.org-content { height:100dvh; padding:58px 16px 18px; }.org-content h1 { font-size:21px; }.org-stepper { margin-top:-12px; }.org-form-grid,.org-upload-grid { grid-template-columns:1fr; }.org-actions { position:sticky; bottom:-18px; margin:18px -16px -18px; padding:10px 16px 12px; }.org-actions button { flex:1; }.org-verification-grid { grid-template-columns:1fr; }.org-review-card dl { grid-template-columns:1fr; }.org-success-grid { grid-template-columns:1fr; }.org-selected-file strong { max-width:220px; }
+  .org-registration-success-backdrop { padding: 12px; }.org-registration-success { width: 100%; max-height: calc(100dvh - 24px); min-height: 500px; overflow-y: auto; padding: 18px 18px 24px; }.org-registration-illustration { width: 280px; height: 130px; }.org-registration-success h2 { font-size: 27px; }.org-registration-subtitle { font-size: 14px; }.org-registration-notice { min-height: 104px; }.org-registration-actions { grid-template-columns: 1fr; }.org-registration-details dl { grid-template-columns: 1fr; }
 }
 @media (max-height: 680px) {
   .org-modal { height:calc(100vh - 24px); min-height:560px; }.org-overlay { padding:12px; }.org-content { padding-top:52px; }.org-sidebar-logo { height:50px; }.org-illustration { height:110px; }.org-benefits { gap:6px; }.org-benefits > div { padding:6px 8px; }
