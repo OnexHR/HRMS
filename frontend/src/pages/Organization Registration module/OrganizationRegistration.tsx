@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, DragEvent, FormEvent, ReactNode } from "react";
 import {
   ArrowLeft, ArrowRight, Building2, Check, CheckCircle2, ChevronRight,
-  FileText, Mail, Phone, ShieldCheck, Trash2, UploadCloud, Users, X,
+  FileText, Hourglass, Info, Mail, Phone, ShieldCheck, Trash2, UploadCloud, Users, X,
 } from "lucide-react";
 import logo from "../../assets/OnexHRLogo.png";
 import landingBackground from "../../assets/landingpagebg.webp";
@@ -103,6 +103,7 @@ export default function OrganizationRegistration({ open, onClose }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [success, setSuccess] = useState<{registrationId:string; organizationName:string; submissionDate:string}|null>(null);
+  const [showSuccessDetails, setShowSuccessDetails] = useState(false);
   const [countdown, setCountdown] = useState(0);
 
   useEffect(() => {
@@ -168,7 +169,7 @@ export default function OrganizationRegistration({ open, onClose }: Props) {
     setStep((current) => Math.min(current + 1, 4));
   };
   const cancel = () => {
-    setStep(0); setForm(initialState); setErrors({}); setSuccess(null); setOtpTarget(null); onClose();
+    setStep(0); setForm(initialState); setErrors({}); setSuccess(null); setShowSuccessDetails(false); setOtpTarget(null); onClose();
   };
 
   const sendOtp = async (channel: "email" | "mobile") => {
@@ -268,18 +269,7 @@ export default function OrganizationRegistration({ open, onClose }: Props) {
         <main className="org-content">
           <button type="button" className="org-close" onClick={cancel} aria-label="Close"><X size={20}/></button>
           {success ? (
-            <section className="org-success">
-              <div className="org-success-icon"><Check size={38}/></div>
-              <h2>Organization Registration Submitted Successfully!</h2>
-              <p>Your organization registration request has been submitted successfully. Our team will review your information and notify you about the verification status.</p>
-              <div className="org-success-grid">
-                <div><span>Registration ID</span><strong>{success.registrationId}</strong></div>
-                <div><span>Organization Name</span><strong>{success.organizationName}</strong></div>
-                <div><span>Submission Date</span><strong>{new Date(success.submissionDate).toLocaleDateString()}</strong></div>
-                <div><span>Status</span><strong className="pending">Pending Verification</strong></div>
-              </div>
-              <button type="button" className="org-primary" onClick={cancel}>Go to Login</button>
-            </section>
+            <section className="org-success-placeholder" aria-hidden="true" />
           ) : (
             <>
               {step < 4 && (
@@ -432,6 +422,50 @@ export default function OrganizationRegistration({ open, onClose }: Props) {
           )}
         </main>
       </div>
+      {success && (
+        <div className="org-registration-success-backdrop" role="presentation">
+          <section className="org-registration-success" role="dialog" aria-modal="true" aria-labelledby="registration-success-title">
+            <button type="button" className="org-registration-success-close" onClick={cancel} aria-label="Close"><X size={20}/></button>
+            {showSuccessDetails ? (
+              <div className="org-registration-details">
+                <div className="org-registration-details-icon"><Building2 size={30}/></div>
+                <h2 id="registration-success-title">Organization Details</h2>
+                <dl>
+                  <div><dt>Organization Name</dt><dd>{success.organizationName}</dd></div>
+                  <div><dt>Organization Type</dt><dd>{renderReviewValue(form.organizationType)}</dd></div>
+                  <div><dt>Industry</dt><dd>{renderReviewValue(form.industry)}</dd></div>
+                  <div><dt>Official Email</dt><dd>{renderReviewValue(form.officialEmail)}</dd></div>
+                  <div><dt>Registration ID</dt><dd>{success.registrationId}</dd></div>
+                  <div><dt>Status</dt><dd className="org-registration-details-status">Pending Verification</dd></div>
+                </dl>
+                <button type="button" className="org-primary org-registration-primary" onClick={() => setShowSuccessDetails(false)}>Back to Confirmation</button>
+              </div>
+            ) : (
+              <>
+                <div className="org-registration-illustration" aria-hidden="true">
+                  <span className="org-registration-dot dot-one"/>
+                  <span className="org-registration-dot dot-two"/>
+                  <span className="org-registration-dot dot-three"/>
+                  <span className="org-registration-building building-left"/>
+                  <span className="org-registration-building building-right"/>
+                  <div className="org-registration-hourglass"><Hourglass size={112} strokeWidth={1.7}/></div>
+                </div>
+                <h2 id="registration-success-title">Registration Complete!</h2>
+                <p className="org-registration-subtitle">Your organization has been registered successfully.</p>
+                <div className="org-registration-notice">
+                  <Info size={24}/>
+                  <p><strong>Your account is now under review. Our support team will verify the details and approve your organization shortly.</strong></p>
+                </div>
+                <p className="org-registration-followup">You'll receive a notification once your organization is approved.</p>
+                <div className="org-registration-actions">
+                  <button type="button" className="org-primary" onClick={cancel}>Go to Login <ArrowRight size={17}/></button>
+                  <button type="button" className="org-secondary" onClick={() => setShowSuccessDetails(true)}>View Organization Details</button>
+                </div>
+              </>
+            )}
+          </section>
+        </div>
+      )}
       {otpTarget && (
         <div className="org-otp-overlay" role="dialog" aria-modal="true">
           <form className="org-otp-modal" onSubmit={verifyOtp}>
