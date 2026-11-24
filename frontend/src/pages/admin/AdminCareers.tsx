@@ -595,7 +595,7 @@ export default function AdminCareers() {
                                     type="submit"
                                     disabled={saving}
                                     className={`px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold text-sm transition ${
-                                        saving ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"
+                                        saving ? "opacity-50 " : "hover:bg-blue-700"
                                     }`}
                                 >
                                     {saving ? "Saving..." : editingId ? "Update" : "Create"}

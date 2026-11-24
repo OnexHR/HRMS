@@ -4,6 +4,8 @@ import {
   LayoutDashboard,
   ListChecks,
   FilePlus2,
+  CalendarDays,
+  Megaphone,
   UserRound,
   Settings,
   LogOut,
@@ -17,6 +19,8 @@ type SidebarProps = {
     | "dashboard"
     | "my-tasks"
     | "apply-leave"
+    | "holidays"
+    | "announcements"
     | "profile"
     | "settings";
 };
@@ -29,21 +33,33 @@ const Sidebar: React.FC<SidebarProps> = ({ active = "dashboard" }) => {
   const navItems = [
     {
       id: "dashboard",
-      label: "Dashboard",
+      label: "Overview",
       icon: LayoutDashboard,
       to: "/employee",
     },
     {
       id: "my-tasks",
-      label: "My Tasks",
+      label: "Worklist",
       icon: ListChecks,
       to: "/employee/my-tasks",
     },
     {
       id: "apply-leave",
-      label: "Apply Leave",
+      label: "Leave Request",
       icon: FilePlus2,
       to: "/employee/apply-leave",
+    },
+    {
+      id: "announcements",
+      label: "Announcements",
+      icon: Megaphone,
+      to: "/employee/announcements",
+    },
+    {
+      id: "holidays",
+      label: "Holidays",
+      icon: CalendarDays,
+      to: "/employee/holidays",
     },
     {
       id: "profile",
@@ -66,22 +82,28 @@ const Sidebar: React.FC<SidebarProps> = ({ active = "dashboard" }) => {
   };
 
   return (
-    <aside className="fixed left-0 top-0 z-20 flex h-screen w-60 flex-col bg-[#10284A] text-white shadow-lg">
-      <div className="flex h-20 items-center border-b border-white/10 px-5">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="h-20 w-fit items-center pl-1 md:pl-4">
-            <Link to="/" className="flex h-full items-center">
+    <aside
+      onWheelCapture={(event) => event.preventDefault()}
+      className="fixed left-0 top-0 z-30 flex h-screen w-60 min-w-[15rem] shrink-0 flex-col overflow-hidden overscroll-none rounded-r-xl border-r border-blue-950/20 bg-gradient-to-b from-[#0B1F4D] via-[#123A85] to-[#1D4ED8] text-white shadow-lg"
+    >
+      <div className="flex h-24 shrink-0 items-center justify-center px-5">
+        <div className="flex min-w-0 items-center justify-center">
+          <div className="employee-sidebar-logo translate-y-3">
+            <Link
+              to="/"
+              className="relative z-10 flex h-full w-full items-center justify-center"
+            >
               <img
                 src={logo}
-                alt="LearnILM World"
-                className="h-8 w-auto object-contain md:h-10"
+                alt="OnexHR"
+                className="h-12 w-auto object-contain opacity-90 md:h-14"
               />
             </Link>
           </div>
         </div>
       </div>
 
-      <nav className="mt-7 flex-1 space-y-2 px-4">
+      <nav className="mt-10 flex-1 space-y-2 px-4">
         {navItems.map((item) => {
           const isActive = item.id === active;
           const Icon = item.icon;
@@ -90,10 +112,10 @@ const Sidebar: React.FC<SidebarProps> = ({ active = "dashboard" }) => {
             <Link
               key={item.id}
               to={item.to}
-              className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm transition ${
+              className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-[15px] transition ${
                 isActive
-                  ? "bg-[#2459A6] font-semibold shadow-sm"
-                  : "font-medium text-blue-100 hover:bg-white/10"
+                  ? "bg-white font-semibold text-[#1D4ED8] shadow-md ring-1 ring-blue-100"
+                  : "font-medium text-blue-50 hover:bg-white/10"
               }`}
             >
               <Icon size={20} />
@@ -103,14 +125,14 @@ const Sidebar: React.FC<SidebarProps> = ({ active = "dashboard" }) => {
         })}
       </nav>
 
-      <div className="border-t border-white/10 p-4">
+      <div className="shrink-0 border-t border-white/15 px-4 pb-4 pt-2">
         <button
           type="button"
           onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-rose-300 transition hover:bg-rose-500/10 hover:text-rose-200"
+          className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-[15px] font-medium text-blue-50 transition hover:bg-rose-500/20 hover:text-rose-100"
         >
           <LogOut size={20} />
-          <span>Log Out</span>
+          <span>Logout</span>
         </button>
       </div>
     </aside>
@@ -118,109 +140,3 @@ const Sidebar: React.FC<SidebarProps> = ({ active = "dashboard" }) => {
 };
 
 export default Sidebar;
-
-
-// import React from "react";
-// import {
-//   LayoutDashboard,
-//   CalendarDays,
-//   User,
-//   Settings,
-// } from "lucide-react";
-
-// const Sidebar: React.FC<{
-//   onNavigate: (page: string) => void;
-//   activePage: string;
-// }> = ({ onNavigate, activePage }) => {
-//   return (
-//     <aside className="fixed left-0 top-0 z-20 h-screen w-60 bg-[#10284A] text-white shadow-lg">
-//       <div className="flex h-20 items-center border-b border-white/10 px-5">
-//         <div className="flex min-w-0 items-center gap-3">
-//           <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white">
-//             <img
-//               src="/web-app-manifest-512x512.png"
-//               alt="LearnILmWorld"
-//               className="h-full w-full object-cover"
-//             />
-//           </div>
-
-//           <div className="w-[145px]">
-//             <h1 className="whitespace-nowrap text-[17px] font-bold">
-//               LearnILmWorld
-//             </h1>
-
-//             <p className="whitespace-nowrap text-xs text-blue-200">
-//               Employee Portal
-//             </p>
-//           </div>
-//         </div>
-//       </div>
-
-//       <nav className="mt-7 space-y-2 px-4">
-//         {/* Dashboard */}
-//         <button
-//           type="button"
-//           onClick={() => onNavigate("dashboard")}
-//           className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold transition ${
-//             activePage === "dashboard"
-//               ? "bg-[#2459A6] shadow-sm"
-//               : "text-blue-100 hover:bg-white/10"
-//           }`}
-//         >
-//           <LayoutDashboard size={20} />
-//           <span>Dashboard</span>
-//         </button>
-
-//         {/* My Tasks  */}
-//         <button
-//           type="button"
-//           onClick={() => onNavigate("my-tasks")}
-//           className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition ${
-//             activePage === "my-tasks"
-//               ? "bg-[#2459A6] text-white shadow-sm"
-//               : "text-blue-100 hover:bg-white/10"
-//           }`}
-//         >
-//           <CalendarDays size={20} />
-//           <span>My Tasks</span>
-//         </button>
-
-       
-
-//         {/* Apply Leave */}
-//         <button
-//           type="button"
-//           onClick={() => onNavigate("ApplyForLeave")}
-//           className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition ${
-//             activePage === "ApplyForLeave"
-//               ? "bg-[#2459A6] text-white shadow-sm"
-//               : "text-blue-100 hover:bg-white/10"
-//           }`}
-//         >
-//           <CalendarDays size={20} />
-//           <span>Apply For Leave</span>
-//         </button>
-
-//         {/* Profile */}
-//         <button
-//           type="button"
-//           className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-blue-100 transition hover:bg-white/10"
-//         >
-//           <User size={20} />
-//           <span>Profile</span>
-//         </button>
-
-//         {/* Settings */}
-//         <button
-//           type="button"
-//           className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-blue-100 transition hover:bg-white/10"
-//         >
-//           <Settings size={20} />
-//           <span>Settings</span>
-//         </button>
-//       </nav>
-//     </aside>
-//   );
-// };
-
-// export default Sidebar;

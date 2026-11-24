@@ -13,7 +13,7 @@ import {
   Timer,
 } from "lucide-react";
 
-type TodayWorkSummaryData = {
+export type TodayWorkSummaryData = {
   totalTasks?: number;
   notStarted?: number;
   completed?: number;
@@ -35,7 +35,7 @@ const formatMinutes = (minutes = 0) => {
 const TodaysWorkSummary: React.FC<{ summary?: TodayWorkSummaryData }> = ({ summary }) => {
   const stats = [
     {
-      label: "Total task",
+      label: "Total work",
       value: summary?.totalTasks ?? 0,
       icon: ClipboardList,
       bg: "bg-indigo-50",

@@ -99,7 +99,7 @@ const StudentBio: React.FC<StudentBioProps> = ({
             className={`w-full h-[150px] px-6 pt-8 pb-8 rounded-xl border-l-4 border-blue-600 text-sm text-gray-700 resize-none transition-[background-color,border-color,box-shadow] duration-150 focus:outline-none ${
               isEditing
                 ? "bg-white border-[1px] border-solid border-gray-200 border-l-blue-600 focus:ring-1 focus:ring-blue-500"
-                : "bg-gradient-to-br from-blue-50 to-blue-100/40 cursor-not-allowed"
+                : "bg-gradient-to-br from-blue-50 to-blue-100/40 "
             }`}
           />
 
@@ -131,7 +131,7 @@ const StudentBio: React.FC<StudentBioProps> = ({
             isEditing ? handleSave : handleEdit
           }
           disabled={loading}
-          className="flex items-center gap-2 px-6 py-2.5 bg-[#02277a] text-white rounded-lg hover:bg-blue-800 font-medium text-sm transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+          className="employee-primary-action flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-medium transition"
         >
           {loading && isEditing ? (
             <Loader2

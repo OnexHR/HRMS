@@ -80,7 +80,7 @@ export default function HeroTutorSelector({
       <button
         onClick={handleAdd}
         disabled={!selectedTutor || creating}
-        className='mt-4 rounded bg-blue-600 px-6 py-2 text-white disabled:cursor-not-allowed disabled:opacity-50'
+        className='mt-4 rounded bg-blue-600 px-6 py-2 text-white  disabled:opacity-50'
       >
         {creating ? "Adding..." : "Add Hero Tutor"}
       </button>

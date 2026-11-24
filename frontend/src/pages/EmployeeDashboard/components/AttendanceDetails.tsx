@@ -1,432 +1,19 @@
-// import React, { useState } from "react";
-// import {
-//   CalendarDays,
-//   ChevronDown,
-//   ChevronLeft,
-//   ChevronRight,
-// } from "lucide-react";
-
-// type AttendanceStatus =
-//   | "Present"
-//   | "Half Day"
-//   | "Leave"
-//   | "Absent";
-
-// type AttendanceDay = {
-//   status: AttendanceStatus;
-//   overtime?: boolean;
-// };
-
-// const AttendanceDetails: React.FC = () => {
-//   const [selectedDate, setSelectedDate] = useState(17);
-
-//   const attendanceData: Record<number, AttendanceDay> = {
-//     1: { status: "Present" },
-//     2: { status: "Present" },
-//     3: { status: "Present" },
-//     4: { status: "Absent" },
-//     5: { status: "Half Day", overtime: true },
-//     6: { status: "Half Day", overtime: true },
-
-//     7: { status: "Present" },
-//     8: { status: "Present", overtime: true },
-//     9: { status: "Half Day" },
-//     10: { status: "Half Day" },
-//     11: { status: "Leave", overtime: true },
-//     12: { status: "Leave", overtime: true },
-//     13: { status: "Present" },
-
-//     14: { status: "Half Day" },
-//     15: { status: "Absent" },
-//     16: { status: "Absent", overtime: true },
-//     17: { status: "Present" },
-//     18: { status: "Half Day" },
-//     19: { status: "Absent" },
-//     20: { status: "Leave", overtime: true },
-
-//     21: { status: "Half Day", overtime: true },
-//     22: { status: "Present" },
-//     23: { status: "Present" },
-//     24: { status: "Absent" },
-//     25: { status: "Leave", overtime: true },
-//     26: { status: "Half Day", overtime: true },
-//     27: { status: "Present" },
-
-//     28: { status: "Present" },
-//     29: { status: "Present", overtime: true },
-//     30: { status: "Leave", overtime: true },
-//   };
-
-//   const selectedData = attendanceData[selectedDate];
-
-//   const getStatusColor = (status: AttendanceStatus) => {
-//     switch (status) {
-//       case "Present":
-//         return {
-//           dot: "bg-green-400",
-//           ring: "border-green-300 bg-white",
-//           text: "text-green-600",
-//         };
-
-//       case "Half Day":
-//         return {
-//           dot: "bg-yellow-400",
-//           ring: "border-yellow-300 bg-white",
-//           text: "text-yellow-500",
-//         };
-
-//       case "Leave":
-//         return {
-//           dot: "bg-blue-500",
-//           ring: "border-blue-300 bg-white",
-//           text: "text-blue-600",
-//         };
-
-//       case "Absent":
-//         return {
-//           dot: "bg-red-400",
-//           ring: "border-red-300 bg-white",
-//           text: "text-red-500",
-//         };
-//     }
-//   };
-
-//   const selectedColor = getStatusColor(selectedData.status);
-
-//   return (
-//     <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-//       {/* Header */}
-//       <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
-//         <CalendarDays
-//           size={26}
-//           className="text-[#2459A6]"
-//         />
-
-//         <h3 className="text-xl font-semibold text-[#10284A]">
-//           Attendance Details
-//         </h3>
-//       </div>
-
-//       {/* Main Content */}
-//       <div className="mt-5 grid grid-cols-[1.55fr_0.9fr_1fr] gap-4">
-//         {/* CALENDAR */}
-//         <div className="rounded-xl border border-gray-100 bg-white p-4">
-//           {/* Month Header */}
-//           <div className="flex items-center justify-between">
-//             <button
-//               type="button"
-//               className="flex h-8 w-8 items-center justify-center rounded-lg text-[#10284A] transition hover:bg-gray-100"
-//             >
-//               <ChevronLeft size={18} />
-//             </button>
-
-//             <h4 className="text-lg font-semibold text-[#10284A]">
-//               September 2026
-//             </h4>
-
-//             <button
-//               type="button"
-//               className="flex h-8 w-8 items-center justify-center rounded-lg text-[#10284A] transition hover:bg-gray-100"
-//             >
-//               <ChevronRight size={18} />
-//             </button>
-//           </div>
-
-//           {/* Week Days */}
-//           <div className="mt-5 grid grid-cols-7 text-center">
-//             {[
-//               "Mon",
-//               "Tue",
-//               "Wed",
-//               "Thu",
-//               "Fri",
-//               "Sat",
-//               "Sun",
-//             ].map((day) => (
-//               <span
-//                 key={day}
-//                 className="text-xs font-medium text-gray-400"
-//               >
-//                 {day}
-//               </span>
-//             ))}
-//           </div>
-
-//           {/* Calendar */}
-//           <div className="mt-3 grid grid-cols-7 gap-y-2 text-center">
-//             {/* August 31 */}
-//             <div className="flex h-12 flex-col items-center justify-center">
-//               <span className="text-sm text-gray-300">
-//                 31
-//               </span>
-
-//               <span className="mt-1 h-2 w-2 rounded-full bg-gray-100" />
-//             </div>
-
-//             {Array.from({ length: 30 }, (_, index) => {
-//               const date = index + 1;
-//               const data = attendanceData[date];
-//               const colors = getStatusColor(data.status);
-
-//               return (
-//                 <button
-//                   key={date}
-//                   type="button"
-//                   onClick={() => setSelectedDate(date)}
-//                   className="flex h-12 flex-col items-center justify-center"
-//                 >
-//                   {/* Date */}
-//                   <span
-//                     className={`flex h-8 w-8 items-center justify-center text-sm font-medium ${
-//                       selectedDate === date
-//                         ? "rounded-full bg-[#2459A6] text-white"
-//                         : "text-[#10284A]"
-//                     }`}
-//                   >
-//                     {date}
-//                   </span>
-
-//                   {/* Status */}
-//                   <span
-//                     className={`mt-1 flex h-3 w-3 items-center justify-center rounded-full ${
-//                       data.overtime
-//                         ? `border-2 ${colors.ring}`
-//                         : colors.dot
-//                     }`}
-//                   >
-//                     {data.overtime && (
-//                       <span
-//                         className={`h-1.5 w-1.5 rounded-full ${colors.dot}`}
-//                       />
-//                     )}
-//                   </span>
-//                 </button>
-//               );
-//             })}
-//           </div>
-//         </div>
-
-//         {/* LEGEND */}
-//         <div className="rounded-xl border border-gray-100 bg-white p-4">
-//           <h4 className="text-lg font-semibold text-[#10284A]">
-//             Legend
-//           </h4>
-
-//           <div className="mt-5 space-y-4">
-//             {/* Present */}
-//             <div className="flex items-center gap-3">
-//               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100">
-//                 <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
-//               </span>
-
-//               <span className="text-sm text-gray-600">
-//                 Present
-//               </span>
-//             </div>
-
-//             {/* Half Day */}
-//             <div className="flex items-center gap-3">
-//               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-yellow-100">
-//                 <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
-//               </span>
-
-//               <span className="text-sm text-gray-600">
-//                 Half Day
-//               </span>
-//             </div>
-
-//             {/* Leave */}
-//             <div className="flex items-center gap-3">
-//               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100">
-//                 <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
-//               </span>
-
-//               <span className="text-sm text-gray-600">
-//                 Leave
-//               </span>
-//             </div>
-
-//             {/* Absent */}
-//             <div className="flex items-center gap-3">
-//               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-100">
-//                 <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-//               </span>
-
-//               <span className="text-sm text-gray-600">
-//                 Absent
-//               </span>
-//             </div>
-
-//             {/* Present + Overtime */}
-//             <div className="flex items-center gap-3">
-//               <span className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-green-300">
-//                 <span className="h-2 w-2 rounded-full bg-green-500" />
-//               </span>
-
-//               <span className="text-sm text-gray-600">
-//                 Present + Overtime
-//               </span>
-//             </div>
-
-//             {/* Half Day + Overtime */}
-//             <div className="flex items-center gap-3">
-//               <span className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-yellow-300">
-//                 <span className="h-2 w-2 rounded-full bg-yellow-400" />
-//               </span>
-
-//               <span className="text-sm text-gray-600">
-//                 Half Day + Overtime
-//               </span>
-//             </div>
-
-//             {/* Leave + Overtime */}
-//             <div className="flex items-center gap-3">
-//               <span className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-blue-300">
-//                 <span className="h-2 w-2 rounded-full bg-blue-500" />
-//               </span>
-
-//               <span className="text-sm text-gray-600">
-//                 Leave + Overtime
-//               </span>
-//             </div>
-
-//             {/* Absent + Overtime */}
-//             <div className="flex items-center gap-3">
-//               <span className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-red-300">
-//                 <span className="h-2 w-2 rounded-full bg-red-500" />
-//               </span>
-
-//               <span className="text-sm text-gray-600">
-//                 Absent + Overtime
-//               </span>
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* RIGHT SIDE */}
-//         <div className="space-y-4">
-//           {/* Select Date */}
-//           <div className="rounded-xl border border-gray-100 bg-white p-4">
-//             <h4 className="text-lg font-semibold text-[#10284A]">
-//               Select Date
-//             </h4>
-
-//             <button
-//               type="button"
-//               className="mt-3 flex h-11 w-full items-center justify-between rounded-xl border border-blue-100 bg-white px-3 text-sm text-gray-600 shadow-sm"
-//             >
-//               <div className="flex items-center gap-2">
-//                 <CalendarDays
-//                   size={18}
-//                   className="text-[#2459A6]"
-//                 />
-
-//                 <span>
-//                   {selectedDate} September 2026
-//                 </span>
-//               </div>
-
-//               <ChevronDown
-//                 size={17}
-//                 className="text-gray-500"
-//               />
-//             </button>
-//           </div>
-
-//           {/* Selected Date Details */}
-//           <div className="rounded-xl border border-gray-100 bg-white p-4">
-//             <h4 className="text-lg font-semibold text-[#10284A]">
-//               Selected Date Details
-//             </h4>
-
-//             <div className="mt-4 divide-y divide-gray-100">
-//               {/* Status */}
-//               <div className="flex items-center justify-between py-3">
-//                 <span className="text-sm text-gray-500">
-//                   Status
-//                 </span>
-
-//                 <span
-//                   className={`rounded-full px-3 py-1 text-xs font-semibold ${
-//                     selectedData.status === "Present"
-//                       ? "bg-green-50 text-green-600"
-//                       : selectedData.status === "Half Day"
-//                       ? "bg-yellow-50 text-yellow-600"
-//                       : selectedData.status === "Leave"
-//                       ? "bg-blue-50 text-blue-600"
-//                       : "bg-red-50 text-red-600"
-//                   }`}
-//                 >
-//                   {selectedData.status}
-//                 </span>
-//               </div>
-
-//               {/* Working Hours */}
-//               <div className="flex items-center justify-between py-3">
-//                 <span className="text-sm text-gray-500">
-//                   Working Hours
-//                 </span>
-
-//                 <span className="text-sm font-semibold text-[#10284A]">
-//                   {selectedData.status === "Present"
-//                     ? "6h 24m"
-//                     : "0h 00m"}
-//                 </span>
-//               </div>
-
-//               {/* Break Time */}
-//               <div className="flex items-center justify-between py-3">
-//                 <span className="text-sm text-gray-500">
-//                   Break Time
-//                 </span>
-
-//                 <span className="text-sm font-semibold text-[#10284A]">
-//                   {selectedData.status === "Present"
-//                     ? "32m"
-//                     : "0m"}
-//                 </span>
-//               </div>
-
-//               {/* Overtime */}
-//               <div className="flex items-center justify-between py-3">
-//                 <span className="text-sm text-gray-500">
-//                   Overtime
-//                 </span>
-
-//                 <span className="text-sm font-semibold text-[#10284A]">
-//                   00h 00m
-//                 </span>
-//               </div>
-
-//               {/* Tasks */}
-//               <div className="flex items-center justify-between py-3">
-//                 <span className="text-sm text-gray-500">
-//                   Tasks Completed
-//                 </span>
-
-//                 <span className="text-sm font-semibold text-[#10284A]">
-//                   {selectedData.status === "Present"
-//                     ? "2 / 3"
-//                     : "0 / 0"}
-//                 </span>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </section>
-//   );
-// };
-
-// export default AttendanceDetails;
-
 import React, { useCallback, useEffect, useState } from "react";
 import {
   CalendarDays,
   ChevronLeft,
   ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  CircleCheck,
+  Coffee,
+  ListChecks,
+  LogIn,
+  LogOut,
+  Hourglass,
+  Timer,
 } from "lucide-react";
-import employeeApi from "../../../lib/employeeApi";
+import { getDemoAttendanceMonth } from "../../../lib/employeeDashboardDemo";
 
 type UiStatus = "Present" | "Half Day" | "Leave" | "Absent" | "Unknown";
 
@@ -461,22 +48,22 @@ function toUiStatus(raw?: string): UiStatus {
 function getStatusColor(status: UiStatus) {
   switch (status) {
     case "Present":
-      return { dot: "bg-green-400", ring: "border-green-300 bg-white", text: "text-green-600", badge: "bg-green-50 text-green-600" };
+      return { dot: "bg-green-500", ring: "border-green-400 bg-white", halo: "bg-green-100", text: "text-green-600", badge: "bg-green-100 text-green-700" };
     case "Half Day":
-      return { dot: "bg-yellow-400", ring: "border-yellow-300 bg-white", text: "text-yellow-500", badge: "bg-yellow-50 text-yellow-600" };
+      return { dot: "bg-yellow-400", ring: "border-yellow-400 bg-white", halo: "bg-yellow-100", text: "text-yellow-500", badge: "bg-yellow-100 text-yellow-700" };
     case "Leave":
-      return { dot: "bg-blue-500", ring: "border-blue-300 bg-white", text: "text-blue-600", badge: "bg-blue-50 text-blue-600" };
+      return { dot: "bg-blue-500", ring: "border-blue-400 bg-white", halo: "bg-blue-100", text: "text-blue-600", badge: "bg-blue-100 text-blue-700" };
     default:
-      return { dot: "bg-red-400", ring: "border-red-300 bg-white", text: "text-red-500", badge: "bg-red-50 text-red-600" };
+      return { dot: "bg-red-500", ring: "border-red-400 bg-white", halo: "bg-red-100", text: "text-red-500", badge: "bg-red-100 text-red-700" };
   }
 }
 
-const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+// Sunday-first, like the design.
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const STANDARD_DAY_MINUTES = 540; // 9 hours — mirrors backend default
 const HALF_DAY_MINUTES = STANDARD_DAY_MINUTES / 2;
 
-// Parse "3h 46m" → 226 minutes
 function parseWorkingHours(value?: string): number {
   if (!value) return 0;
   const match = value.match(/(\d+)h\s*(\d+)m/);
@@ -484,8 +71,6 @@ function parseWorkingHours(value?: string): number {
   return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
 }
 
-// For open sessions (checked in, not out), compute live working hours
-// mirroring the backend's monthlyAttendance logic.
 function liveWorkingMinutes(entry: DayEntry): number {
   if (entry.checkIn && !entry.checkOut) {
     const checkInMs = new Date(entry.checkIn).getTime();
@@ -495,13 +80,51 @@ function liveWorkingMinutes(entry: DayEntry): number {
   return parseWorkingHours(entry.workingHours);
 }
 
-// Half Day rule: worked more than 0 but less than half the standard day.
 function uiStatusFor(entry: DayEntry | undefined): UiStatus {
   if (!entry) return "Absent";
   const minutes = liveWorkingMinutes(entry);
   if (minutes > 0 && minutes < HALF_DAY_MINUTES) return "Half Day";
   return toUiStatus(entry.status);
 }
+
+function formatTime(value?: string | null) {
+  if (!value) return "--:--";
+  return new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+const CARD =
+  "rounded-2xl border border-white/80 bg-white/85 shadow-[0_8px_30px_rgba(37,70,170,0.08)] backdrop-blur";
+
+const NavBtn: React.FC<{ onClick: () => void; children: React.ReactNode; label: string }> = ({
+  onClick,
+  children,
+  label,
+}) => (
+  <button
+    type="button"
+    aria-label={label}
+    onClick={onClick}
+    className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#14226B] shadow-sm transition hover:bg-blue-50"
+  >
+    {children}
+  </button>
+);
+
+const DetailRow: React.FC<{ icon: React.ReactNode; label: string; children: React.ReactNode }> = ({
+  icon,
+  label,
+  children,
+}) => (
+  <div className="flex items-center justify-between gap-3 py-2.5">
+    <div className="flex items-center gap-3">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E4ECFF] text-[#1D4ED8]">
+        {icon}
+      </span>
+      <span className="text-sm font-medium text-[#14226B]">{label}</span>
+    </div>
+    <div className="text-sm font-bold text-[#14226B]">{children}</div>
+  </div>
+);
 
 const AttendanceDetails: React.FC = () => {
   const [viewDate, setViewDate] = useState(() => new Date());
@@ -514,10 +137,10 @@ const AttendanceDetails: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await employeeApi.get("/attendance/month", { params: { date: date.toISOString() } });
-      setDayMap(res.data?.dayMap ?? {});
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Could not load attendance.");
+      setDayMap(getDemoAttendanceMonth(date).dayMap);
+    } catch (demoError) {
+      setDayMap({});
+      setError(demoError instanceof Error ? demoError.message : "Could not load demo attendance.");
     } finally {
       setLoading(false);
     }
@@ -525,7 +148,10 @@ const AttendanceDetails: React.FC = () => {
 
   useEffect(() => {
     load(viewDate);
-    setSelectedDate(null);
+    // Land on today when looking at the current month, otherwise nothing selected.
+    const now = new Date();
+    const sameMonth = now.getFullYear() === viewDate.getFullYear() && now.getMonth() === viewDate.getMonth();
+    setSelectedDate(sameMonth ? now.getDate() : null);
   }, [viewDate, load]);
 
   // Refetch after check-in / check-out / break start / break end.
@@ -538,7 +164,9 @@ const AttendanceDetails: React.FC = () => {
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7; // Monday-start
+  const firstWeekday = new Date(year, month, 1).getDay(); // Sunday-start
+  const prevMonthDays = new Date(year, month, 0).getDate();
+  const trailing = (7 - ((firstWeekday + daysInMonth) % 7)) % 7;
 
   const entryFor = (day: number): DayEntry | undefined => {
     const key = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -549,231 +177,203 @@ const AttendanceDetails: React.FC = () => {
   const todayUiStatus = uiStatusFor(today);
   const todayColors = getStatusColor(todayUiStatus);
 
+  const selectedLabel = selectedDate
+    ? new Date(year, month, selectedDate).toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "No date selected";
+
   return (
-    <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-      {/* Header */}
-      <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
-        <CalendarDays
-          size={26}
-          className="text-[#2459A6]"
-        />
+    <section
+      id="attendance-details"
+      className="grid scroll-mt-6 grid-cols-1 items-stretch gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]"
+    >
+      <div className={`${CARD} min-h-[470px] p-5`}>
+        <div className="flex items-center gap-3">
+          <CalendarDays size={24} className="text-[#1D4ED8]" />
+          <h3 className="text-[22px] font-extrabold text-[#14226B]">Attendance Details</h3>
+        </div>
 
-        <h3 className="text-xl font-semibold text-[#10284A]">
-          Attendance Details
-        </h3>
-      </div>
+        {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
 
-      {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
+        <div className="mt-4 grid min-h-[390px] grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_210px]">
+          <div className="min-w-0">
+            <div className="flex items-center justify-between rounded-xl bg-[#EEF3FF] px-3 py-3">
+              <div className="flex items-center gap-1.5">
+                <NavBtn label="Previous year" onClick={() => setViewDate(new Date(year - 1, month, 1))}>
+                  <ChevronsLeft size={16} />
+                </NavBtn>
+                <NavBtn label="Previous month" onClick={() => setViewDate(new Date(year, month - 1, 1))}>
+                  <ChevronLeft size={16} />
+                </NavBtn>
+              </div>
 
-      {/* Main Content */}
-      <div className="mt-5 grid grid-cols-[1.55fr_0.9fr_1fr] gap-4">
-        {/* CALENDAR */}
-        <div className="rounded-xl border border-gray-100 bg-white p-4">
-          {/* Month Header */}
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => setViewDate(new Date(year, month - 1, 1))}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-[#10284A] transition hover:bg-gray-100"
-            >
-              <ChevronLeft size={18} />
-            </button>
+              <h4 className="text-[19px] font-bold text-[#14226B]">
+                {viewDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+              </h4>
 
-            <h4 className="text-lg font-semibold text-[#10284A]">
-              {viewDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-            </h4>
+              <div className="flex items-center gap-1.5">
+                <NavBtn label="Next month" onClick={() => setViewDate(new Date(year, month + 1, 1))}>
+                  <ChevronRight size={16} />
+                </NavBtn>
+                <NavBtn label="Next year" onClick={() => setViewDate(new Date(year + 1, month, 1))}>
+                  <ChevronsRight size={16} />
+                </NavBtn>
+              </div>
+            </div>
 
-            <button
-              type="button"
-              onClick={() => setViewDate(new Date(year, month + 1, 1))}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-[#10284A] transition hover:bg-gray-100"
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
+            <div className="mt-4 grid grid-cols-7 text-center">
+              {WEEKDAYS.map((day) => (
+                <span key={day} className="text-[14px] font-semibold text-[#14226B]">
+                  {day}
+                </span>
+              ))}
+            </div>
 
-          {/* Week Days */}
-          <div className="mt-5 grid grid-cols-7 text-center">
-            {WEEKDAYS.map((day) => (
-              <span
-                key={day}
-                className="text-xs font-medium text-gray-400"
-              >
-                {day}
-              </span>
-            ))}
-          </div>
+            <div className="mt-3 grid grid-cols-7 gap-y-2 text-center">
+              {Array.from({ length: firstWeekday }, (_, i) => (
+                <div key={`prev-${i}`} className="flex h-14 items-start justify-center pt-2">
+                  <span className="text-[15px] font-medium text-gray-300">
+                    {prevMonthDays - firstWeekday + i + 1}
+                  </span>
+                </div>
+              ))}
 
-          {/* Calendar */}
-          <div className="mt-3 grid grid-cols-7 gap-y-2 text-center">
-            {Array.from({ length: firstWeekday }, (_, i) => (
-              <div key={`blank-${i}`} className="h-12" />
-            ))}
+              {loading
+                ? Array.from({ length: daysInMonth }, (_, i) => (
+                    <div key={i} className="flex h-14 flex-col items-center justify-center">
+                      <span className="text-[15px] text-gray-300">{i + 1}</span>
+                    </div>
+                  ))
+                : Array.from({ length: daysInMonth }, (_, index) => {
+                    const date = index + 1;
+                    const entry = entryFor(date);
+                    const uiStatus = uiStatusFor(entry);
+                    const colors = getStatusColor(uiStatus);
+                    const hasOvertime = Boolean(entry?.overtime);
 
-            {loading
-              ? Array.from({ length: daysInMonth }, (_, i) => (
-                  <div key={i} className="flex h-12 flex-col items-center justify-center">
-                    <span className="text-sm text-gray-300">{i + 1}</span>
-                  </div>
-                ))
-              : Array.from({ length: daysInMonth }, (_, index) => {
-                  const date = index + 1;
-                  const entry = entryFor(date);
-                  const uiStatus = uiStatusFor(entry);
-                  const colors = getStatusColor(uiStatus);
-                  const hasOvertime = Boolean(entry?.overtime);
-
-                  return (
-                    <button
-                      key={date}
-                      type="button"
-                      onClick={() => setSelectedDate(date)}
-                      className="flex h-12 flex-col items-center justify-center"
-                    >
-                      {/* Date */}
-                      <span
-                        className={`flex h-8 w-8 items-center justify-center text-sm font-medium ${
-                          selectedDate === date
-                            ? "rounded-full bg-[#2459A6] text-white"
-                            : "text-[#10284A]"
-                        }`}
+                    return (
+                      <button
+                        key={date}
+                        type="button"
+                        onClick={() => setSelectedDate(date)}
+                        className="flex h-14 flex-col items-center justify-center"
                       >
-                        {date}
-                      </span>
-
-                      {/* Status */}
-                      {entry ? (
                         <span
-                          className={`mt-1 flex h-3 w-3 items-center justify-center rounded-full ${
-                            hasOvertime ? `border-2 ${colors.ring}` : colors.dot
+                          className={`flex h-10 w-10 items-center justify-center text-[15px] font-semibold transition ${
+                            selectedDate === date
+                              ? "employee-primary-action rounded-full"
+                              : "rounded-full text-[#14226B] hover:bg-blue-50"
                           }`}
                         >
-                          {hasOvertime && <span className={`h-1.5 w-1.5 rounded-full ${colors.dot}`} />}
+                          {date}
                         </span>
-                      ) : (
-                        <span className="mt-1 h-2 w-2 rounded-full bg-gray-100" />
-                      )}
-                    </button>
-                  );
-                })}
-          </div>
-        </div>
 
-        {/* LEGEND */}
-        <div className="rounded-xl border border-gray-100 bg-white p-4">
-          <h4 className="text-lg font-semibold text-[#10284A]">
-            Legend
-          </h4>
+                        {entry ? (
+                          <span
+                            className={`mt-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full transition ${
+                              hasOvertime ? `border-2 ${colors.ring}` : colors.halo
+                            }`}
+                          >
+                            <span className={`h-1.5 w-1.5 rounded-full ${colors.dot}`} />
+                          </span>
+                        ) : (
+                          <span className="mt-0.5 h-2.5 w-2.5 rounded-full border border-gray-200 bg-gray-100" />
+                        )}
+                      </button>
+                    );
+                  })}
 
-          <div className="mt-5 space-y-4">
-            {[
-              { label: "Present", cls: "bg-green-100 text-green-500" },
-              { label: "Half Day", cls: "bg-yellow-100 text-yellow-400" },
-              { label: "Leave", cls: "bg-blue-100 text-blue-500" },
-              { label: "Absent", cls: "bg-red-100 text-red-500" },
-            ].map(({ label, cls }) => (
-              <div key={label} className="flex items-center gap-3">
-                <span className={`flex h-5 w-5 items-center justify-center rounded-full ${cls.split(" ")[0]}`}>
-                  <span className={`h-2.5 w-2.5 rounded-full ${cls.split(" ")[1].replace("text-", "bg-")}`} />
-                </span>
-                <span className="text-sm text-gray-600">{label}</span>
-              </div>
-            ))}
-
-            {[
-              { label: "Present + Overtime", cls: "border-green-300 bg-green-500" },
-              { label: "Half Day + Overtime", cls: "border-yellow-300 bg-yellow-400" },
-              { label: "Leave + Overtime", cls: "border-blue-300 bg-blue-500" },
-              { label: "Absent + Overtime", cls: "border-red-300 bg-red-500" },
-            ].map(({ label, cls }) => {
-              const [border, bg] = cls.split(" ");
-              return (
-                <div key={label} className="flex items-center gap-3">
-                  <span className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${border}`}>
-                    <span className={`h-2 w-2 rounded-full ${bg}`} />
-                  </span>
-                  <span className="text-sm text-gray-600">{label}</span>
+              {Array.from({ length: trailing }, (_, i) => (
+                <div key={`next-${i}`} className="flex h-14 items-start justify-center pt-2">
+                  <span className="text-[15px] font-medium text-gray-300">{i + 1}</span>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* RIGHT SIDE */}
-        <div className="space-y-4">
-          {/* Select Date */}
-          <div className="rounded-xl border border-gray-100 bg-white p-4">
-            <h4 className="text-lg font-semibold text-[#10284A]">
-              Select Date
-            </h4>
-
-            <div className="mt-3 flex h-11 w-full items-center gap-2 rounded-xl border border-blue-100 bg-white px-3 text-sm text-gray-600 shadow-sm">
-              <CalendarDays
-                size={18}
-                className="text-[#2459A6]"
-              />
-
-              <span>
-                {selectedDate
-                  ? `${selectedDate} ${viewDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}`
-                  : "No date selected"}
-              </span>
+              ))}
             </div>
           </div>
 
-          {/* Selected Date Details */}
-          <div className="rounded-xl border border-gray-100 bg-white p-4">
-            <h4 className="text-lg font-semibold text-[#10284A]">
-              Selected Date Details
-            </h4>
+          <div className="border-t border-blue-100 pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0">
+            <h4 className="text-[19px] font-bold text-[#14226B]">Legend</h4>
 
-            {!selectedDate ? (
-              <p className="mt-4 text-sm text-gray-400">Pick a date on the calendar.</p>
-            ) : (
-              <div className="mt-4 divide-y divide-gray-100">
-                {/* Status */}
-                <div className="flex items-center justify-between py-3">
-                  <span className="text-sm text-gray-500">Status</span>
-                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${todayColors.badge}`}>
-                    {todayUiStatus}
+            <div className="mt-5 space-y-4">
+              {[
+                { label: "Present", dot: "bg-green-500", bg: "bg-green-100" },
+                { label: "Half Day", dot: "bg-yellow-400", bg: "bg-yellow-100" },
+                { label: "Leave", dot: "bg-blue-500", bg: "bg-blue-100" },
+                { label: "Absent", dot: "bg-red-500", bg: "bg-red-100" },
+                { label: "No record", dot: "bg-gray-300", bg: "bg-gray-100" },
+              ].map(({ label, dot, bg }) => (
+                <div key={label} className="flex items-center gap-4">
+                  <span className={`flex h-6 w-6 items-center justify-center rounded-full ${bg}`}>
+                    <span className={`h-3 w-3 rounded-full ${dot}`} />
                   </span>
+                  <span className="text-[15px] text-gray-600">{label}</span>
                 </div>
+              ))}
 
-                {/* Working Hours */}
-                <div className="flex items-center justify-between py-3">
-                  <span className="text-sm text-gray-500">Working Hours</span>
-                  <span className="text-sm font-semibold text-[#10284A]">
-                    {today?.workingHours ?? "0h 00m"}
+              {[
+                { label: "Present + Overtime", border: "border-green-400", bg: "bg-green-500" },
+                { label: "Half Day + Overtime", border: "border-yellow-400", bg: "bg-yellow-400" },
+                { label: "Leave + Overtime", border: "border-blue-400", bg: "bg-blue-500" },
+                { label: "Absent + Overtime", border: "border-red-400", bg: "bg-red-500" },
+              ].map(({ label, border, bg }) => (
+                <div key={label} className="flex items-center gap-4">
+                  <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 bg-white ${border}`}>
+                    <span className={`h-2.5 w-2.5 rounded-full ${bg}`} />
                   </span>
+                  <span className="text-[15px] leading-tight text-gray-600">{label}</span>
                 </div>
-
-                {/* Break Time */}
-                <div className="flex items-center justify-between py-3">
-                  <span className="text-sm text-gray-500">Break Time</span>
-                  <span className="text-sm font-semibold text-[#10284A]">
-                    {today?.breakTime ?? "0m"}
-                  </span>
-                </div>
-
-                {/* Overtime */}
-                <div className="flex items-center justify-between py-3">
-                  <span className="text-sm text-gray-500">Overtime</span>
-                  <span className="text-sm font-semibold text-[#10284A]">
-                    {today?.overtime ?? "00h 00m"}
-                  </span>
-                </div>
-
-                {/* Tasks */}
-                <div className="flex items-center justify-between py-3">
-                  <span className="text-sm text-gray-500">Tasks Completed</span>
-                  <span className="text-sm font-semibold text-[#10284A]">
-                    {today?.tasksCompleted ?? 0}
-                  </span>
-                </div>
-              </div>
-            )}
+              ))}
+            </div>
           </div>
         </div>
+      </div>
+
+      <div className={`${CARD} flex h-full flex-col p-4`}>
+        <h4 className="text-[18px] font-extrabold text-[#14226B]">Selected Day Details</h4>
+
+        <div className="mt-4 rounded-xl bg-[#DDE8FF] py-3 text-center text-[17px] font-extrabold text-[#14226B]">
+          {selectedLabel}
+        </div>
+
+        {!selectedDate ? (
+          <p className="mt-5 text-sm text-gray-400">Pick a date on the calendar.</p>
+        ) : (
+          <div className="mt-2 flex flex-1 flex-col justify-between divide-y divide-blue-50">
+            <DetailRow icon={<CircleCheck size={17} />} label="Status">
+              <span className={`rounded-full px-4 py-1 text-xs font-bold ${todayColors.badge}`}>
+                {todayUiStatus}
+              </span>
+            </DetailRow>
+
+            <DetailRow icon={<LogIn size={16} />} label="Check In">
+              {formatTime(today?.checkIn)}
+            </DetailRow>
+
+            <DetailRow icon={<LogOut size={16} />} label="Check Out">
+              {formatTime(today?.checkOut)}
+            </DetailRow>
+
+            <DetailRow icon={<Timer size={17} />} label="Working Hours">
+              {today?.workingHours ?? "0h 00m"}
+            </DetailRow>
+
+            <DetailRow icon={<Coffee size={16} />} label="Break Time">
+              {today?.breakTime ?? "0m"}
+            </DetailRow>
+
+            <DetailRow icon={<Hourglass size={16} />} label="Overtime">
+              {today?.overtime ?? "00h 00m"}
+            </DetailRow>
+
+            <DetailRow icon={<ListChecks size={17} />} label="Work Completed">
+              {today?.tasksCompleted ?? 0}
+            </DetailRow>
+          </div>
+        )}
       </div>
     </section>
   );

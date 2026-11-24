@@ -12,7 +12,8 @@ const employeeApi = axios.create({
 employeeApi.interceptors.request.use((config) => {
   const token =
     localStorage.getItem("employeeToken") ||
-    localStorage.getItem("token");
+    localStorage.getItem("token") ||
+    sessionStorage.getItem("hrms.demo.accessToken");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

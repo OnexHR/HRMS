@@ -17,6 +17,7 @@ import AdminStudents from './AdminStudents'
 import AdminCareers from './AdminCareers'
 import AdminHeroTutors from './AdminHeroTutors'
 import AdminEmployees from './AdminEmployees'
+import Footer2 from '../../components/Footer2'
 
 // interface Certification {
 //   name: string
@@ -132,7 +133,7 @@ const AdminDashboard: React.FC = () => {
           </button>
         </div>
 
-        <div className="flex-1 p-4 sm:p-6 overflow-auto">
+        <div data-route-scroll-container className="flex-1 p-4 sm:p-6 overflow-auto">
           <Routes>
             <Route path="/" element={<h1 className="text-2xl font-semibold">Admin Dashboard</h1>} />
             <Route path="/users" element={<AdminUsers />} />
@@ -146,6 +147,7 @@ const AdminDashboard: React.FC = () => {
             <Route path="/hero-tutors" element={<AdminHeroTutors />} />
           </Routes>
         </div>
+        <Footer2 />
       </div>
     </div>
   )

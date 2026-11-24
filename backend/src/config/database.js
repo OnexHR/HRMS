@@ -6,7 +6,7 @@ export async function connectDatabase() {
     throw new Error('MONGODB_URI is not configured')
   }
 
-  await mongoose.connect(env.mongodbUri)
+  await mongoose.connect(env.mongodbUri, { serverSelectionTimeoutMS: 10000 })
   return mongoose.connection
 }
 
