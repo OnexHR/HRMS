@@ -1,7 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Landingpage from "./pages/landingpage/Landingpage";
 import EmployeeDashboard from "./pages/EmployeeDashboard/EmployeeDashboard";
-import ManagerDashboard from "./pages/ManagerDashboard/ManagerDashboard";
+import ManagerDashboard from "./pages/managerdashboard/ManagerDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 
 function App() {
