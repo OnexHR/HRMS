@@ -220,7 +220,7 @@ const AssignTaskForm: React.FC<{ members?: Member[]; onCreated?: () => void }> =
         type="button"
         disabled={submitting || uploadingAttachments}
         onClick={handleSubmit}
-        className="mt-5 flex items-center gap-2 rounded-xl bg-[#2459A6] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1e4a8c]  disabled:opacity-70"
+        className="mt-5 flex items-center gap-2 rounded-xl bg-[#2459A6] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1e4a8c] disabled:cursor-not-allowed disabled:opacity-70"
       >
         <Plus size={16} />
         {submitting ? "Assigning..." : "Assign Task"}

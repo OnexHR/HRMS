@@ -171,7 +171,7 @@ const QuickActions: React.FC<{
             disabled={breakBusy || Boolean(checkOut)}
             onClick={handleBreakToggle}
             title={checkOut ? "You already checked out for today" : undefined}
-            className="flex h-[85px] w-full items-center justify-center gap-3 rounded-xl border border-amber-200 bg-amber-50 text-[17px] font-semibold text-amber-700 transition hover:bg-amber-100  disabled:opacity-60"
+            className="flex h-[85px] w-full items-center justify-center gap-3 rounded-xl border border-amber-200 bg-amber-50 text-[17px] font-semibold text-amber-700 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {breakBusy ? <Loader2 size={23} className="animate-spin" /> : <Coffee size={23} />}
             <span>{onBreak ? "End Break" : "On Break"}</span>
